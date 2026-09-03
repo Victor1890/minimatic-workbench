@@ -119,38 +119,53 @@ const groupedDocs = categories.map(cat => ({
 			<div class="pt-3 border-t border-outline">
 				<div class="flex items-center gap-2 text-xs text-on-surface-variant">
 					<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-					<span>Eve Analyzer Engine Active</span>
+					<span>Markdown & CodeMirror Ready</span>
 				</div>
 			</div>
 		</aside>
 
-		<!-- Editor Pane (Center/Left) -->
+		<!-- Left Pane: Mode Switcher (CodeMirror Source vs Rendered Markdown Document) -->
 		<div class="flex flex-col h-full overflow-hidden border-r border-outline-variant bg-white">
-			<div class="h-10 bg-surface-container-low border-b border-outline-variant flex items-center justify-between px-4">
-				<div class="flex items-center gap-1.5">
+			<div class="h-10 bg-surface-container-low border-b border-outline-variant flex items-center justify-between px-4 flex-shrink-0">
+				<div class="flex items-center gap-2">
 					<span class="text-xs">📝</span>
-					<span class="font-semibold text-xs text-on-surface">Markdown Memory Editor</span>
+					<span class="font-semibold text-xs text-on-surface">Document Editor</span>
 				</div>
-				<span class="text-[11px] text-on-surface-variant">Live Keyup Evaluation</span>
+				<!-- View Mode Toggle -->
+				<div class="flex items-center bg-surface-container-high rounded-lg p-0.5 border border-outline">
+					<button id="view-mode-editor" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-white text-primary shadow-xs cursor-pointer transition-all">Edit Source</button>
+					<button id="view-mode-rendered" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-md text-on-surface-variant hover:text-on-surface cursor-pointer transition-all">Rendered Doc</button>
+				</div>
 			</div>
-			<textarea id="markdown-input" spellcheck="false" placeholder="Type Markdown here..." class="flex-1 w-full p-5 border-none outline-none resize-none font-mono text-xs leading-relaxed text-on-surface bg-white"></textarea>
+			
+			<!-- CodeMirror Source Editor Container -->
+			<div id="codemirror-wrapper-pane" class="flex-1 overflow-hidden font-mono text-xs"></div>
+			
+			<!-- Final Formatted Rendered Markdown View (Hidden by default, toggled via mode) -->
+			<div id="rendered-doc-view-pane" class="hidden flex-1 p-6 overflow-y-auto font-body text-sm leading-relaxed text-on-surface markdown-render-body"></div>
 		</div>
 
-		<!-- Preview Pane (Right) -->
+		<!-- Right Pane: Code Outputs & Inspector Only -->
 		<div class="flex flex-col h-full overflow-hidden bg-surface-container">
-			<div class="h-10 bg-surface-container-low border-b border-outline-variant flex items-center justify-between px-4">
+			<div class="h-10 bg-surface-container-low border-b border-outline-variant flex items-center justify-between px-4 flex-shrink-0">
 				<div class="flex items-center gap-1.5">
-					<span class="text-xs">🔍</span>
-					<span class="font-semibold text-xs text-on-surface">Eve Inspector & Live Render</span>
+					<span class="text-xs">⚡</span>
+					<span class="font-semibold text-xs text-on-surface">Code Output Inspector</span>
 				</div>
 				<span class="text-[11px] text-on-surface-variant" id="current-doc-title">Minimatic Workbench</span>
 			</div>
-			<div id="preview-output" class="flex-1 p-6 overflow-y-auto font-body text-sm leading-relaxed text-on-surface"></div>
+
+			<div id="inspector-output-pane" class="flex-1 p-6 overflow-y-auto space-y-6">
+				<!-- Output blocks dynamically rendered here -->
+			</div>
 		</div>
 	</div>
 </div>
 
 <script>
+import { EditorView, basicSetup } from 'codemirror';
+import { EditorState } from '@codemirror/state';
+import { markdown } from '@codemirror/lang-markdown';
 import { marked } from 'marked';
 import { renderMMT } from '../utils/mmt-engine.js';
 import { renderMinimatic } from '../utils/minimatic-engine.js';
@@ -191,16 +206,98 @@ DOC_PRESETS.forEach(doc => {
 	docContentMap[doc.id] = saved || doc.content;
 });
 
-const editorInput = document.getElementById('markdown-input') as HTMLTextAreaElement;
-const previewOutput = document.getElementById('preview-output') as HTMLDivElement;
+const cmWrapperPane = document.getElementById('codemirror-wrapper-pane') as HTMLDivElement;
+const renderedDocPane = document.getElementById('rendered-doc-view-pane') as HTMLDivElement;
+const inspectorPane = document.getElementById('inspector-output-pane') as HTMLDivElement;
 const currentTitleEl = document.getElementById('current-doc-title') as HTMLSpanElement;
 const searchInput = document.getElementById('doc-search-input') as HTMLInputElement;
+
+const btnViewEditor = document.getElementById('view-mode-editor');
+const btnViewRendered = document.getElementById('view-mode-rendered');
+
+let currentViewMode = 'editor'; // 'editor' | 'rendered'
+let cmEditor: EditorView | null = null;
+
+function initCodeMirror(initialDoc: string) {
+	if (!cmWrapperPane) return;
+	if (cmEditor) cmEditor.destroy();
+
+	const updateListener = EditorView.updateListener.of((update) => {
+		if (update.docChanged) {
+			const currentText = update.state.doc.toString();
+			docContentMap[activeDocId] = currentText;
+			localStorage.setItem('doc_content_' + activeDocId, currentText);
+			updateRenderedDocView(currentText);
+			evaluateCodeOutputs(currentText);
+		}
+	});
+
+	const customTheme = EditorView.theme({
+		"&": { height: "100%", fontSize: "13px" },
+		".cm-scroller": { overflow: "auto", fontFamily: "'Fira Code', monospace" },
+		".cm-content": { padding: "16px 20px" },
+		".cm-gutters": { backgroundColor: "#f7f2eb", borderRight: "1px solid #c7c4c2", color: "#95908d" },
+		".cm-activeLine": { backgroundColor: "rgba(23, 128, 94, 0.05)" },
+		".cm-activeLineGutter": { backgroundColor: "#e9ded8", color: "#17805e" }
+	});
+
+	const state = EditorState.create({
+		doc: initialDoc,
+		extensions: [
+			basicSetup,
+			markdown(),
+			updateListener,
+			customTheme,
+			EditorView.lineWrapping
+		]
+	});
+
+	cmEditor = new EditorView({
+		state,
+		parent: cmWrapperPane
+	});
+}
+
+function updateRenderedDocView(markdownText: string) {
+	if (renderedDocPane) {
+		renderedDocPane.innerHTML = marked.parse(markdownText) as string;
+	}
+}
+
+function setViewMode(mode: string) {
+	currentViewMode = mode;
+	if (mode === 'editor') {
+		cmWrapperPane?.classList.remove('hidden');
+		renderedDocPane?.classList.add('hidden');
+
+		btnViewEditor?.classList.add('bg-white', 'text-primary', 'shadow-xs');
+		btnViewEditor?.classList.remove('text-on-surface-variant');
+
+		btnViewRendered?.classList.remove('bg-white', 'text-primary', 'shadow-xs');
+		btnViewRendered?.classList.add('text-on-surface-variant');
+	} else {
+		cmWrapperPane?.classList.add('hidden');
+		renderedDocPane?.classList.remove('hidden');
+
+		btnViewRendered?.classList.add('bg-white', 'text-primary', 'shadow-xs');
+		btnViewRendered?.classList.remove('text-on-surface-variant');
+
+		btnViewEditor?.classList.remove('bg-white', 'text-primary', 'shadow-xs');
+		btnViewEditor?.classList.add('text-on-surface-variant');
+	}
+}
+
+btnViewEditor?.addEventListener('click', () => setViewMode('editor'));
+btnViewRendered?.addEventListener('click', () => setViewMode('rendered'));
 
 function loadDocument(id: string) {
 	activeDocId = id;
 	const doc = DOC_PRESETS.find(d => d.id === id) || DOC_PRESETS[0];
 	if (currentTitleEl && doc) currentTitleEl.innerText = doc.title;
-	if (doc) editorInput.value = docContentMap[id];
+	
+	const content = docContentMap[id] || (doc ? doc.content : '');
+	initCodeMirror(content);
+	updateRenderedDocView(content);
 
 	document.querySelectorAll('.doc-link-btn').forEach(el => {
 		if (el.getAttribute('data-id') === id) {
@@ -210,68 +307,82 @@ function loadDocument(id: string) {
 		}
 	});
 
-	updatePreview();
+	evaluateCodeOutputs(content);
 }
 
-async function updatePreview() {
-	const text = editorInput.value;
-	docContentMap[activeDocId] = text;
-	localStorage.setItem('doc_content_' + activeDocId, text);
+function evaluateCodeOutputs(markdownText: string) {
+	if (!inspectorPane) return;
 
-	let html = marked.parse(text) as string;
-	const tempDiv = document.createElement('div');
-	tempDiv.innerHTML = html;
+	inspectorPane.innerHTML = '';
+	let foundCodeBlocks = 0;
 
-	const pythonBlocksToRun = [];
+	// Regex search for ```lang ... ``` blocks
+	const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+	let match;
 
-	tempDiv.querySelectorAll('pre code').forEach((codeEl, index) => {
-		const langClass = codeEl.className || '';
-		const codeText = codeEl.textContent || '';
-		const preParent = codeEl.parentElement;
+	while ((match = codeBlockRegex.exec(markdownText)) !== null) {
+		const lang = (match[1] || '').toLowerCase().trim();
+		const codeText = match[2].trim();
+		const index = foundCodeBlocks + 1;
 
-		if (langClass.includes('language-mmt')) {
+		if (lang === 'mmt' || codeText.includes('node:') || codeText.includes('table:')) {
+			foundCodeBlocks++;
 			const mmtHtml = renderMMT(codeText);
-			const wrapper = document.createElement('div');
-			wrapper.innerHTML = mmtHtml;
-			preParent?.replaceWith(wrapper);
-		} else if (langClass.includes('language-minimatic')) {
-			const miniHtml = renderMinimatic(codeText);
-			const wrapper = document.createElement('div');
-			wrapper.innerHTML = miniHtml;
-			preParent?.replaceWith(wrapper);
-		} else if (langClass.includes('language-python')) {
-			const outputId = 'py_out_' + Math.random().toString(36).substr(2, 6);
-			const wrapper = document.createElement('div');
-			wrapper.style.margin = '16px 0';
-			wrapper.style.border = '1px solid var(--outline)';
-			wrapper.style.borderRadius = '12px';
-			wrapper.style.padding = '16px';
-			wrapper.style.background = '#ffffff';
-
-			wrapper.innerHTML = `
-				<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-					<span style="font-weight: 600; font-size: 13px; color: #17805e;">🐍 Python Evaluator</span>
-					<button class="run-py-btn" style="background: #17805e; color: #ffffff; border: none; padding: 4px 12px; border-radius: 9999px; font-size: 12px; cursor: pointer; font-weight: 600;">Run Code</button>
+			const card = document.createElement('div');
+			card.className = 'bg-white border border-outline rounded-xl p-4 shadow-sm';
+			card.innerHTML = `
+				<div class="flex items-center justify-between mb-3 border-b border-outline-variant pb-2">
+					<span class="font-bold text-xs text-primary">📐 MMT Diagram & Table Output</span>
+					<span class="text-[10px] font-mono bg-surface-container-high px-2 py-0.5 rounded text-on-surface-variant">Block #${index}</span>
 				</div>
-				<pre style="background: #f7f2eb; padding: 10px; border-radius: 8px; font-size: 13px; margin-bottom: 10px;"><code>${codeText}</code></pre>
+				${mmtHtml}
+			`;
+			inspectorPane.appendChild(card);
+		} else if (lang === 'minimatic' || codeText.includes('state') || codeText.includes('button')) {
+			foundCodeBlocks++;
+			const miniHtml = renderMinimatic(codeText);
+			const card = document.createElement('div');
+			card.className = 'bg-white border border-outline rounded-xl p-4 shadow-sm';
+			card.innerHTML = `
+				<div class="flex items-center justify-between mb-3 border-b border-outline-variant pb-2">
+					<span class="font-bold text-xs text-primary">⚡ Minimatic State Analyzer Output</span>
+					<span class="text-[10px] font-mono bg-surface-container-high px-2 py-0.5 rounded text-on-surface-variant">Block #${index}</span>
+				</div>
+				${miniHtml}
+			`;
+			inspectorPane.appendChild(card);
+		} else if (lang === 'python' || codeText.includes('def ') || codeText.includes('print(')) {
+			foundCodeBlocks++;
+			const outputId = 'py_inspector_out_' + index;
+			const card = document.createElement('div');
+			card.className = 'bg-white border border-outline rounded-xl p-4 shadow-sm';
+			card.innerHTML = `
+				<div class="flex items-center justify-between mb-3 border-b border-outline-variant pb-2">
+					<span class="font-bold text-xs text-primary">🐍 Python Code Output Console</span>
+					<button class="run-py-btn bg-primary text-on-primary border-none text-[11px] font-semibold px-3 py-1 rounded-full cursor-pointer hover:bg-primary-hover transition-colors">Run Code</button>
+				</div>
+				<pre class="bg-surface-container-low p-3 rounded-lg text-xs font-mono mb-3 overflow-x-auto"><code>${codeText}</code></pre>
 				<div id="${outputId}" class="py-output"></div>
 			`;
+			inspectorPane.appendChild(card);
 
-			preParent?.replaceWith(wrapper);
-			pythonBlocksToRun.push({ codeText, outputId, btn: wrapper.querySelector('.run-py-btn') });
+			const btn = card.querySelector('.run-py-btn');
+			if (btn) {
+				btn.addEventListener('click', () => runPythonCode(codeText, outputId));
+			}
+			runPythonCode(codeText, outputId);
 		}
-	});
+	}
 
-	previewOutput.innerHTML = tempDiv.innerHTML;
-
-	pythonBlocksToRun.forEach(item => {
-		if (item.btn) {
-			item.btn.addEventListener('click', () => {
-				runPythonCode(item.codeText, item.outputId);
-			});
-		}
-		runPythonCode(item.codeText, item.outputId);
-	});
+	if (foundCodeBlocks === 0) {
+		inspectorPane.innerHTML = `
+			<div class="bg-white border border-outline rounded-xl p-8 text-center text-on-surface-variant">
+				<div class="text-3xl mb-2">🔍</div>
+				<div class="font-bold text-sm text-on-surface mb-1">No Code Executables Found</div>
+				<div class="text-xs">Add a <code>\`\`\`python</code>, <code>\`\`\`mmt</code>, or <code>\`\`\`minimatic</code> block in the CodeMirror editor to see live visual output.</div>
+			</div>
+		`;
+	}
 }
 
 // Search Filter & Nav category filter
@@ -337,14 +448,10 @@ function filterDocs(searchQuery: string, categoryFilter: string) {
 
 // Keyboard '/' shortcut
 window.addEventListener('keydown', (e) => {
-	if (e.key === '/' && document.activeElement !== editorInput && document.activeElement !== searchInput) {
+	if (e.key === '/' && document.activeElement !== searchInput) {
 		e.preventDefault();
 		searchInput?.focus();
 	}
-});
-
-editorInput.addEventListener('input', () => {
-	updatePreview();
 });
 
 document.querySelectorAll('.doc-link-btn').forEach(btn => {
@@ -357,20 +464,26 @@ document.querySelectorAll('.doc-link-btn').forEach(btn => {
 
 document.getElementById('btn-reset')?.addEventListener('click', () => {
 	const doc = DOC_PRESETS.find(d => d.id === activeDocId);
-	if (doc) {
+	if (doc && cmEditor) {
 		docContentMap[activeDocId] = doc.content;
 		localStorage.removeItem('doc_content_' + activeDocId);
-		editorInput.value = doc.content;
-		updatePreview();
+		cmEditor.dispatch({
+			changes: { from: 0, to: cmEditor.state.doc.length, insert: doc.content }
+		});
+		updateRenderedDocView(doc.content);
+		evaluateCodeOutputs(doc.content);
 	}
 });
 
 document.getElementById('btn-copy')?.addEventListener('click', () => {
-	navigator.clipboard.writeText(editorInput.value);
-	const btn = document.getElementById('btn-copy');
-	if (btn) {
-		btn.innerText = 'Copied!';
-		setTimeout(() => btn.innerText = 'Copy MD', 2000);
+	if (cmEditor) {
+		const text = cmEditor.state.doc.toString();
+		navigator.clipboard.writeText(text);
+		const btn = document.getElementById('btn-copy');
+		if (btn) {
+			btn.innerText = 'Copied!';
+			setTimeout(() => btn.innerText = 'Copy MD', 2000);
+		}
 	}
 });
 
@@ -383,37 +496,112 @@ details[open] > summary .caret {
 	transform: rotate(90deg);
 }
 
-#preview-output h1 {
-	font-size: 1.625rem;
-	margin-top: 0;
+#codemirror-wrapper-pane .cm-editor {
+	height: 100%;
+}
+
+/* Rich Markdown Rendered Document Typography */
+.markdown-render-body h1 {
+	font-family: var(--font-display);
+	font-size: 1.75rem;
+	font-weight: 700;
 	color: #17805e;
 	border-bottom: 2px solid #a8d5c4;
 	padding-bottom: 0.5rem;
+	margin-bottom: 1.25rem;
+	margin-top: 0;
 }
 
-#preview-output h2 {
-	font-size: 1.125rem;
-	margin-top: 1.25rem;
+.markdown-render-body h2 {
+	font-family: var(--font-display);
+	font-size: 1.35rem;
+	font-weight: 700;
+	color: #1b1c1c;
+	margin-top: 1.75rem;
+	margin-bottom: 0.75rem;
 }
 
-#preview-output code {
+.markdown-render-body h3 {
+	font-family: var(--font-display);
+	font-size: 1.15rem;
+	font-weight: 700;
+	color: #1b1c1c;
+	margin-top: 1.5rem;
+	margin-bottom: 0.5rem;
+}
+
+.markdown-render-body p {
+	margin-bottom: 1rem;
+	line-height: 1.65;
+	color: #1b1c1c;
+}
+
+.markdown-render-body code {
 	background: #e9ded8;
-	padding: 0.125rem 0.375rem;
+	padding: 0.15rem 0.4rem;
 	border-radius: 0.25rem;
 	font-size: 0.8125rem;
 	color: #17805e;
+	font-family: 'Fira Code', monospace;
 }
 
-#preview-output pre {
-	background: #e9ded8;
-	padding: 0.875rem;
+.markdown-render-body pre {
+	background: #f7f2eb;
+	border: 1px solid #c7c4c2;
+	padding: 1rem;
 	border-radius: 0.5rem;
 	overflow-x: auto;
+	margin-bottom: 1.25rem;
 }
 
-#preview-output pre code {
+.markdown-render-body pre code {
 	background: transparent;
 	padding: 0;
 	color: inherit;
+}
+
+.markdown-render-body ul, .markdown-render-body ol {
+	margin-bottom: 1rem;
+	padding-left: 1.5rem;
+}
+
+.markdown-render-body ul {
+	list-style-type: disc;
+}
+
+.markdown-render-body ol {
+	list-style-type: decimal;
+}
+
+.markdown-render-body li {
+	margin-bottom: 0.35rem;
+}
+
+.markdown-render-body blockquote {
+	border-left: 4px solid #17805e;
+	background: #f7f2eb;
+	padding: 0.75rem 1rem;
+	margin-bottom: 1.25rem;
+	border-radius: 0 0.5rem 0.5rem 0;
+	color: #95908d;
+	font-style: italic;
+}
+
+.markdown-render-body table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 1.25rem;
+}
+
+.markdown-render-body th, .markdown-render-body td {
+	border: 1px solid #c7c4c2;
+	padding: 0.5rem 0.75rem;
+	text-align: left;
+}
+
+.markdown-render-body th {
+	background: #f7f2eb;
+	font-weight: 600;
+	color: #17805e;
 }
 </style>
