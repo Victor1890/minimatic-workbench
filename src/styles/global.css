@@ -1,127 +1,46 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+	--color-surface: #fbf9f8;
+	--color-surface-dim: #f7f2eb;
+	--color-surface-bright: #ffffff;
+	--color-surface-container-low: #f7f2eb;
+	--color-surface-container: #fbf9f8;
+	--color-surface-container-high: #e9ded8;
+	--color-surface-container-highest: #ddd2cc;
+	--color-on-surface: #1b1c1c;
+	--color-on-surface-variant: #95908d;
+	--color-outline: #c7c4c2;
+	--color-outline-variant: #96908d;
+	--color-primary: #17805e;
+	--color-on-primary: #ffffff;
+	--color-primary-container: #a8d5c4;
+	--color-on-primary-container: #0d4a38;
+	--color-primary-hover: #0f5a45;
+	--color-secondary: #1b1c1c;
+	--color-on-secondary: #fbf9f8;
 
-  --color-surface: #fbf9f8;
-  --color-surface-dim: #f7f2eb;
-  --color-surface-bright: #ffffff;
-  --color-surface-container-lowest: #ede6de;
-  --color-surface-container-low: #f7f2eb;
-  --color-surface-container: #fbf9f8;
-  --color-surface-container-high: #e9ded8;
-  --color-surface-container-highest: #ddd2cc;
-
-  --color-primary: #17805e;
-  --color-primary-hover: #146c4f;
-  --color-primary-active: #0f5a45;
-  --color-primary-container: #a8d5c4;
-  --color-on-primary-container: #0d4a38;
-
-  --color-on-surface: #1b1c1c;
-  --color-on-surface-variant: #95908d;
-  --color-outline: #c7c4c2;
-  --color-outline-variant: #96908d;
-
-  --color-secondary-container: #262626;
-  --color-tertiary: #0099ff;
+	--font-display: 'Bricolage Grotesque', sans-serif;
+	--font-body: 'Inter', sans-serif;
+	--font-mono: 'Fira Code', monospace;
 }
 
-:root {
-  --font-display: var(--font-bricolage), sans-serif;
-  --font-sans: var(--font-inter), sans-serif;
-  --color-canvas: #fbf9f8;
-  --color-surface: #f7f2eb;
-  --color-foreground: #1b1c1c;
+h1, h2, h3, h4, .font-headline {
+	font-family: var(--font-display);
 }
 
-html {
-  scroll-behavior: smooth;
-  font-family: var(--font-sans);
-  background-color: #fbf9f8;
-  color: #1b1c1c;
+/* Scrollbars */
+::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
 }
-
-body {
-  background-color: #fbf9f8;
-  color: #1b1c1c;
-  min-height: 100vh;
-  overflow-x: hidden;
+::-webkit-scrollbar-track {
+	background: #f7f2eb;
 }
-
-.font-display {
-  font-family: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+::-webkit-scrollbar-thumb {
+	background: #c7c4c2;
+	border-radius: 9999px;
 }
-
-/* TechSpeed-inspired Marquee animation */
-@keyframes marquee {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-.animate-marquee {
-  display: flex;
-  width: max-content;
-  animation: marquee 25s linear infinite;
-}
-
-.animate-marquee:hover {
-  animation-play-state: paused;
-}
-
-/* TechSpeed-inspired Button clip-path hover effect */
-.tech-btn {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-.tech-btn-primary {
-  background-color: #17805e;
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(23, 128, 94, 0.2);
-}
-
-.tech-btn-primary:hover {
-  background-color: #146c4f;
-  box-shadow: 0 4px 14px rgba(23, 128, 94, 0.3);
-  transform: translateY(-1px);
-}
-
-.tech-btn-dark {
-  background-color: #1b1c1c;
-  color: #ffffff;
-}
-
-.tech-btn-dark:hover {
-  background-color: #262626;
-  transform: translateY(-1px);
-}
-
-.zenwood-card {
-  background-color: #ffffff;
-  border-radius: 1.25rem;
-  border: 1px solid #e9ded8;
-  box-shadow: 0 4px 16px rgba(27, 28, 28, 0.05);
-  transition: all 0.3s ease;
-}
-
-.zenwood-card:hover {
-  background-color: #ffffff;
-  border-color: #17805e;
-  box-shadow: 0 12px 32px rgba(23, 128, 94, 0.12);
-}
-
-.layout-container {
-  width: 100%;
-  max-width: 1280px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+::-webkit-scrollbar-thumb:hover {
+	background: #96908d;
 }

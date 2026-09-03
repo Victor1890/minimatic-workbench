@@ -34,73 +34,73 @@ const groupedDocs = categories.map(cat => ({
 }));
 ---
 
-<div class="workbench-container">
+<div class="flex flex-col h-screen w-screen overflow-hidden bg-surface">
 	<!-- Navbar (Astro Docs Style: withastro/docs) -->
-	<header class="navbar">
-		<div class="navbar-brand-section">
-			<a href="/docs" class="brand-link">
-				<svg class="astro-logo" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+	<header class="h-15 bg-surface border-b border-outline-variant flex items-center justify-between px-5 gap-4">
+		<div class="flex items-center gap-2.5 min-w-[200px]">
+			<a href="/" class="flex items-center gap-2 no-underline text-on-surface">
+				<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
 					<path d="M12 2L2 22H6L12 10L18 22H22L12 2Z" fill="#17805e"/>
 					<circle cx="12" cy="15" r="2.5" fill="#a8d5c4"/>
 				</svg>
-				<span class="brand-title">Minimatic</span>
-				<span class="brand-subtitle">Docs</span>
+				<span class="font-display font-bold text-lg">Minimatic</span>
+				<span class="font-medium text-sm text-primary">Docs</span>
 			</a>
-			<span class="version-badge">v0.1</span>
+			<span class="bg-surface-container-high text-on-surface-variant text-[11px] font-semibold px-2 py-0.5 rounded-full border border-outline">v0.1</span>
 		</div>
 
 		<!-- Search Input (Astro Docs style) -->
-		<div class="navbar-search">
-			<svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+		<div class="relative flex-1 max-w-[420px] flex items-center">
+			<svg class="absolute left-3 text-on-surface-variant" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 				<circle cx="11" cy="11" r="8"></circle>
 				<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
 			</svg>
-			<input type="text" id="doc-search-input" placeholder="Search documentation... (Press '/')" />
+			<input type="text" id="doc-search-input" placeholder="Search documentation... (Press '/')" class="w-full h-9.5 pl-9 pr-3.5 bg-surface-container-low border border-outline rounded-full text-xs text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 focus:bg-white transition-all" />
 		</div>
 
 		<!-- Nav Links -->
-		<nav class="navbar-links">
-			<button class="nav-link-btn active" data-filter="all">All</button>
-			<button class="nav-link-btn" data-filter="Core Spec">Core Spec</button>
-			<button class="nav-link-btn" data-filter="Guides">Guides</button>
-			<button class="nav-link-btn" data-filter="Proposals">Proposals</button>
-			<a href="https://github.com/Victor1890/minimatic-workbench" target="_blank" rel="noopener" class="nav-github-link" title="GitHub Repository">
+		<nav class="flex items-center gap-2">
+			<button class="nav-link-btn active bg-primary-container text-primary font-semibold text-xs px-3 py-1.5 rounded-full cursor-pointer hover:bg-primary-container/80 transition-colors" data-filter="all">All</button>
+			<button class="nav-link-btn text-on-surface-variant font-semibold text-xs px-3 py-1.5 rounded-full cursor-pointer hover:bg-surface-container-high hover:text-on-surface transition-colors" data-filter="Core Spec">Core Spec</button>
+			<button class="nav-link-btn text-on-surface-variant font-semibold text-xs px-3 py-1.5 rounded-full cursor-pointer hover:bg-surface-container-high hover:text-on-surface transition-colors" data-filter="Guides">Guides</button>
+			<button class="nav-link-btn text-on-surface-variant font-semibold text-xs px-3 py-1.5 rounded-full cursor-pointer hover:bg-surface-container-high hover:text-on-surface transition-colors" data-filter="Proposals">Proposals</button>
+			<a href="https://github.com/gabrielebaez/minimatic-kernel" target="_blank" rel="noopener" class="text-on-surface-variant hover:text-primary p-1.5 rounded-full transition-colors" title="GitHub Repository">
 				<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
 					<path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
 				</svg>
 			</a>
-			<button id="btn-reset" class="btn-secondary-sm">Reset</button>
-			<button id="btn-copy" class="btn-primary-sm">Copy MD</button>
+			<button id="btn-reset" class="bg-transparent text-on-surface border border-outline rounded-full px-3.5 py-1.5 font-semibold text-xs cursor-pointer hover:bg-surface-container-high transition-colors">Reset</button>
+			<button id="btn-copy" class="bg-primary text-on-primary border-none rounded-full px-4 py-1.5 font-semibold text-xs cursor-pointer hover:bg-primary-hover shadow-sm transition-colors">Copy MD</button>
 		</nav>
 	</header>
 
 	<!-- Main Fourfold Workspace -->
-	<div class="workbench-main">
+	<div class="grid grid-cols-[280px_1fr_1fr] h-[calc(100vh-60px)] overflow-hidden">
 		<!-- Sidebar Nav (Astro Docs Starlight Collapsible Details/Summary Tree) -->
-		<aside class="workbench-sidebar">
-			<div class="sidebar-header">
-				<span class="sidebar-title">DOCUMENTATION</span>
-				<span id="doc-count-badge" class="count-badge">{DOC_PRESETS.length}</span>
+		<aside class="bg-surface-container-low border-r border-outline-variant flex flex-col p-4 overflow-hidden">
+			<div class="flex items-center justify-between mb-3 px-2">
+				<span class="text-[11px] font-bold tracking-wider text-on-surface-variant">DOCUMENTATION</span>
+				<span id="doc-count-badge" class="bg-surface-container-highest text-on-surface text-[10px] font-bold px-1.5 py-0.5 rounded">{DOC_PRESETS.length}</span>
 			</div>
 			
-			<nav class="sidebar-nav">
-				<ul class="top-level">
+			<nav class="flex-1 overflow-y-auto pr-1">
+				<ul class="flex flex-col gap-1.5 list-none m-0 p-0">
 					{groupedDocs.map((group) => (
-						<li class="group-li" data-category-group={group.category}>
-							<details open class="group-details">
-								<summary class="group-summary">
+						<li class="list-none group-li" data-category-group={group.category}>
+							<details open class="block group-details">
+								<summary class="flex items-center justify-between px-2.5 py-1.5 rounded-md cursor-pointer select-none hover:bg-surface-container-high transition-colors group-summary">
 									<span class="group-label">
-										<span class="large">{group.category}</span>
+										<span class="text-xs font-bold text-on-surface uppercase tracking-wide large">{group.category}</span>
 									</span>
-									<svg aria-hidden="true" class="caret" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+									<svg aria-hidden="true" class="caret text-on-surface-variant transition-transform duration-200" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
 										<path d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"></path>
 									</svg>
 								</summary>
-								<ul class="sub-level">
+								<ul class="list-none my-1 ml-3 pl-2 border-l border-outline flex flex-col gap-0.5 sub-level">
 									{group.docs.map((preset) => (
-										<li class="sub-li">
+										<li class="list-none sub-li">
 											<button 
-												class="doc-link-btn"
+												class="doc-link-btn w-full text-left bg-transparent border-none px-2.5 py-1.5 text-xs font-medium text-on-surface-variant rounded cursor-pointer hover:bg-surface-container-high hover:text-on-surface transition-all"
 												data-id={preset.id}
 												data-category={preset.category}
 												data-title={preset.title.toLowerCase()}
@@ -116,36 +116,36 @@ const groupedDocs = categories.map(cat => ({
 				</ul>
 			</nav>
 
-			<div class="sidebar-footer">
-				<div class="status-indicator">
-					<span class="status-dot pulse"></span>
-					<span class="status-text">Eve Analyzer Engine Active</span>
+			<div class="pt-3 border-t border-outline">
+				<div class="flex items-center gap-2 text-xs text-on-surface-variant">
+					<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+					<span>Eve Analyzer Engine Active</span>
 				</div>
 			</div>
 		</aside>
 
 		<!-- Editor Pane (Center/Left) -->
-		<div class="pane editor-pane">
-			<div class="pane-header">
-				<div class="pane-header-left">
-					<span class="pane-icon">📝</span>
-					<span class="pane-title">Markdown Memory Editor</span>
+		<div class="flex flex-col h-full overflow-hidden border-r border-outline-variant bg-white">
+			<div class="h-10 bg-surface-container-low border-b border-outline-variant flex items-center justify-between px-4">
+				<div class="flex items-center gap-1.5">
+					<span class="text-xs">📝</span>
+					<span class="font-semibold text-xs text-on-surface">Markdown Memory Editor</span>
 				</div>
-				<span class="pane-hint">Live Keyup Evaluation</span>
+				<span class="text-[11px] text-on-surface-variant">Live Keyup Evaluation</span>
 			</div>
-			<textarea id="markdown-input" spellcheck="false" placeholder="Type Markdown here..."></textarea>
+			<textarea id="markdown-input" spellcheck="false" placeholder="Type Markdown here..." class="flex-1 w-full p-5 border-none outline-none resize-none font-mono text-xs leading-relaxed text-on-surface bg-white"></textarea>
 		</div>
 
 		<!-- Preview Pane (Right) -->
-		<div class="pane preview-pane">
-			<div class="pane-header">
-				<div class="pane-header-left">
-					<span class="pane-icon">🔍</span>
-					<span class="pane-title">Eve Inspector & Live Render</span>
+		<div class="flex flex-col h-full overflow-hidden bg-surface-container">
+			<div class="h-10 bg-surface-container-low border-b border-outline-variant flex items-center justify-between px-4">
+				<div class="flex items-center gap-1.5">
+					<span class="text-xs">🔍</span>
+					<span class="font-semibold text-xs text-on-surface">Eve Inspector & Live Render</span>
 				</div>
-				<span class="pane-hint" id="current-doc-title">Minimatic Workbench</span>
+				<span class="text-[11px] text-on-surface-variant" id="current-doc-title">Minimatic Workbench</span>
 			</div>
-			<div id="preview-output" class="markdown-body"></div>
+			<div id="preview-output" class="flex-1 p-6 overflow-y-auto font-body text-sm leading-relaxed text-on-surface"></div>
 		</div>
 	</div>
 </div>
@@ -204,9 +204,9 @@ function loadDocument(id: string) {
 
 	document.querySelectorAll('.doc-link-btn').forEach(el => {
 		if (el.getAttribute('data-id') === id) {
-			el.classList.add('active');
+			el.classList.add('!bg-primary-container', '!text-primary', '!font-semibold');
 		} else {
-			el.classList.remove('active');
+			el.classList.remove('!bg-primary-container', '!text-primary', '!font-semibold');
 		}
 	});
 
@@ -288,8 +288,12 @@ document.querySelectorAll('.nav-link-btn').forEach(btn => {
 		const filter = target.getAttribute('data-filter') || 'all';
 		activeCategoryFilter = filter;
 
-		document.querySelectorAll('.nav-link-btn').forEach(b => b.classList.remove('active'));
-		target.classList.add('active');
+		document.querySelectorAll('.nav-link-btn').forEach(b => {
+			b.classList.remove('bg-primary-container', 'text-primary');
+			b.classList.add('text-on-surface-variant');
+		});
+		target.classList.add('bg-primary-container', 'text-primary');
+		target.classList.remove('text-on-surface-variant');
 
 		filterDocs(searchInput?.value.toLowerCase() || '', filter);
 	});
@@ -375,430 +379,35 @@ if (activeDocId) loadDocument(activeDocId);
 </script>
 
 <style>
-.workbench-container {
-	display: flex;
-	flex-direction: column;
-	height: 100vh;
-	width: 100vw;
-	overflow: hidden;
-	background: var(--surface);
-}
-
-/* Navbar */
-.navbar {
-	height: 60px;
-	background: var(--surface);
-	border-bottom: 1px solid var(--outline-variant);
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 0 20px;
-	gap: 16px;
-}
-
-.navbar-brand-section {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	min-width: 200px;
-}
-
-.brand-link {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	text-decoration: none;
-	color: var(--on-surface);
-}
-
-.brand-title {
-	font-family: var(--font-display);
-	font-weight: 700;
-	font-size: 18px;
-	color: var(--on-surface);
-}
-
-.brand-subtitle {
-	font-weight: 500;
-	font-size: 14px;
-	color: var(--primary);
-}
-
-.version-badge {
-	background: var(--surface-container-high);
-	color: var(--on-surface-variant);
-	font-size: 11px;
-	font-weight: 600;
-	padding: 2px 8px;
-	border-radius: var(--radius-full);
-	border: 1px solid var(--outline);
-}
-
-/* Search bar */
-.navbar-search {
-	position: relative;
-	flex: 1;
-	max-width: 420px;
-	display: flex;
-	align-items: center;
-}
-
-.search-icon {
-	position: absolute;
-	left: 12px;
-	color: var(--on-surface-variant);
-}
-
-#doc-search-input {
-	width: 100%;
-	height: 38px;
-	padding: 0 14px 0 36px;
-	background: var(--surface-container-low);
-	border: 1px solid var(--outline);
-	border-radius: var(--radius-full);
-	font-family: var(--font-body);
-	font-size: 13px;
-	color: var(--on-surface);
-	outline: none;
-	transition: all 0.2s ease;
-}
-
-#doc-search-input:focus {
-	border-color: var(--primary);
-	box-shadow: 0 0 0 3px rgba(23, 128, 94, 0.1);
-	background: #ffffff;
-}
-
-/* Nav Links & Buttons */
-.navbar-links {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-
-.nav-link-btn {
-	background: transparent;
-	border: none;
-	color: var(--on-surface-variant);
-	font-family: var(--font-body);
-	font-weight: 600;
-	font-size: 13px;
-	padding: 6px 12px;
-	border-radius: var(--radius-full);
-	cursor: pointer;
-	transition: all 0.2s ease;
-}
-
-.nav-link-btn:hover {
-	color: var(--on-surface);
-	background: var(--surface-container-high);
-}
-
-.nav-link-btn.active {
-	color: var(--primary);
-	background: var(--primary-container);
-}
-
-.nav-github-link {
-	color: var(--on-surface-variant);
-	display: flex;
-	align-items: center;
-	padding: 6px;
-	border-radius: 50%;
-	transition: color 0.2s ease;
-}
-
-.nav-github-link:hover {
-	color: var(--primary);
-}
-
-.btn-primary-sm {
-	background: var(--primary);
-	color: var(--on-primary);
-	border: none;
-	border-radius: var(--radius-full);
-	padding: 6px 16px;
-	font-weight: 600;
-	font-size: 12px;
-	cursor: pointer;
-}
-
-.btn-secondary-sm {
-	background: transparent;
-	color: var(--on-surface);
-	border: 1px solid var(--outline);
-	border-radius: var(--radius-full);
-	padding: 6px 14px;
-	font-weight: 600;
-	font-size: 12px;
-	cursor: pointer;
-}
-
-/* Main Workspace Grid */
-.workbench-main {
-	display: grid;
-	grid-template-columns: 280px 1fr 1fr;
-	height: calc(100vh - 60px);
-	overflow: hidden;
-}
-
-/* Sidebar (Astro Docs Starlight details/summary tree view) */
-.workbench-sidebar {
-	background: var(--surface-container-low);
-	border-right: 1px solid var(--outline-variant);
-	display: flex;
-	flex-direction: column;
-	padding: 16px 12px;
-	overflow: hidden;
-}
-
-.sidebar-header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	margin-bottom: 12px;
-	padding: 0 8px;
-}
-
-.sidebar-title {
-	font-size: 11px;
-	font-weight: 700;
-	letter-spacing: 0.05em;
-	color: var(--on-surface-variant);
-}
-
-.count-badge {
-	background: var(--surface-container-highest);
-	color: var(--on-surface);
-	font-size: 10px;
-	font-weight: 700;
-	padding: 2px 6px;
-	border-radius: 4px;
-}
-
-.sidebar-nav {
-	flex: 1;
-	overflow-y: auto;
-	padding-right: 4px;
-}
-
-/* Astro Starlight sidebar list markup */
-ul.top-level {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-
-li.group-li {
-	list-style: none;
-}
-
-details.group-details {
-	display: block;
-}
-
-summary.group-summary {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 6px 10px;
-	cursor: pointer;
-	border-radius: var(--radius-md);
-	user-select: none;
-	transition: background 0.15s ease;
-}
-
-summary.group-summary:hover {
-	background: var(--surface-container-high);
-}
-
-.group-label .large {
-	font-size: 12px;
-	font-weight: 700;
-	color: var(--on-surface);
-	text-transform: uppercase;
-	letter-spacing: 0.03em;
-}
-
-.caret {
-	color: var(--on-surface-variant);
-	transition: transform 0.2s ease;
-}
-
 details[open] > summary .caret {
 	transform: rotate(90deg);
 }
 
-ul.sub-level {
-	list-style: none;
-	margin: 4px 0 8px 12px;
-	padding: 0 0 0 8px;
-	border-left: 1px solid var(--outline);
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-}
-
-li.sub-li {
-	list-style: none;
-}
-
-.doc-link-btn {
-	display: block;
-	width: 100%;
-	text-align: left;
-	background: transparent;
-	border: none;
-	padding: 6px 10px;
-	font-family: var(--font-body);
-	font-size: 13px;
-	font-weight: 500;
-	color: var(--on-surface-variant);
-	border-radius: var(--radius-sm);
-	cursor: pointer;
-	transition: all 0.15s ease;
-}
-
-.doc-link-btn:hover {
-	color: var(--on-surface);
-	background: var(--surface-container-high);
-}
-
-.doc-link-btn.active {
-	color: var(--primary);
-	font-weight: 600;
-	background: var(--primary-container);
-}
-
-.sidebar-footer {
-	padding-top: 12px;
-	border-top: 1px solid var(--outline);
-}
-
-.status-indicator {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	font-size: 11px;
-	color: var(--on-surface-variant);
-}
-
-.status-dot {
-	width: 8px;
-	height: 8px;
-	border-radius: 50%;
-	background: var(--primary);
-}
-
-.status-dot.pulse {
-	box-shadow: 0 0 0 0 rgba(23, 128, 94, 0.4);
-	animation: pulse-anim 2s infinite;
-}
-
-@keyframes pulse-anim {
-	0% { box-shadow: 0 0 0 0 rgba(23, 128, 94, 0.4); }
-	70% { box-shadow: 0 0 0 8px rgba(23, 128, 94, 0); }
-	100% { box-shadow: 0 0 0 0 rgba(23, 128, 94, 0.4); }
-}
-
-/* Panes */
-.pane {
-	display: flex;
-	flex-direction: column;
-	height: 100%;
-	overflow: hidden;
-}
-
-.editor-pane {
-	border-right: 1px solid var(--outline-variant);
-	background: #ffffff;
-}
-
-.preview-pane {
-	background: var(--surface-container);
-}
-
-.pane-header {
-	height: 40px;
-	background: var(--surface-container-low);
-	border-bottom: 1px solid var(--outline-variant);
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 0 16px;
-}
-
-.pane-header-left {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-}
-
-.pane-title {
-	font-weight: 600;
-	font-size: 12px;
-	color: var(--on-surface);
-}
-
-.pane-hint {
-	font-size: 11px;
-	color: var(--on-surface-variant);
-}
-
-/* Editor Input */
-#markdown-input {
-	flex: 1;
-	width: 100%;
-	height: 100%;
-	padding: 20px;
-	border: none;
-	outline: none;
-	resize: none;
-	font-family: var(--font-mono);
-	font-size: 13px;
-	line-height: 1.6;
-	color: var(--on-surface);
-	background: #ffffff;
-}
-
-/* Preview Output */
-#preview-output {
-	flex: 1;
-	padding: 24px;
-	overflow-y: auto;
-	font-family: var(--font-body);
-	line-height: 1.6;
-	color: var(--on-surface);
-}
-
 #preview-output h1 {
-	font-size: 26px;
+	font-size: 1.625rem;
 	margin-top: 0;
-	color: var(--primary);
-	border-bottom: 2px solid var(--primary-container);
-	padding-bottom: 8px;
+	color: #17805e;
+	border-bottom: 2px solid #a8d5c4;
+	padding-bottom: 0.5rem;
 }
 
 #preview-output h2 {
-	font-size: 18px;
-	margin-top: 20px;
+	font-size: 1.125rem;
+	margin-top: 1.25rem;
 }
 
 #preview-output code {
-	background: var(--surface-container-high);
-	padding: 2px 6px;
-	border-radius: 4px;
-	font-size: 13px;
-	color: var(--primary);
+	background: #e9ded8;
+	padding: 0.125rem 0.375rem;
+	border-radius: 0.25rem;
+	font-size: 0.8125rem;
+	color: #17805e;
 }
 
 #preview-output pre {
-	background: var(--surface-container-high);
-	padding: 14px;
-	border-radius: var(--radius-md);
+	background: #e9ded8;
+	padding: 0.875rem;
+	border-radius: 0.5rem;
 	overflow-x: auto;
 }
 
