@@ -1,0 +1,671 @@
+---
+import { DOC_PRESETS } from '../data/docs.js';
+---
+
+<div class="workbench-container">
+	<!-- Navbar (Astro Docs Style: withastro/docs) -->
+	<header class="navbar">
+		<div class="navbar-brand-section">
+			<a href="/docs" class="brand-link">
+				<svg class="astro-logo" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M12 2L2 22H6L12 10L18 22H22L12 2Z" fill="#17805e"/>
+					<circle cx="12" cy="15" r="2.5" fill="#a8d5c4"/>
+				</svg>
+				<span class="brand-title">Minimatic</span>
+				<span class="brand-subtitle">Docs</span>
+			</a>
+			<span class="version-badge">v0.1</span>
+		</div>
+
+		<!-- Search Input (Astro Docs style) -->
+		<div class="navbar-search">
+			<svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<circle cx="11" cy="11" r="8"></circle>
+				<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+			</svg>
+			<input type="text" id="doc-search-input" placeholder="Search documentation... (Press '/')" />
+		</div>
+
+		<!-- Nav Links -->
+		<nav class="navbar-links">
+			<button class="nav-link-btn active" data-filter="all">All</button>
+			<button class="nav-link-btn" data-filter="Core Spec">Core Spec</button>
+			<button class="nav-link-btn" data-filter="Guides">Guides</button>
+			<button class="nav-link-btn" data-filter="Proposals">Proposals</button>
+			<a href="https://github.com/Victor1890/minimatic-workbench" target="_blank" rel="noopener" class="nav-github-link">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+					<path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+				</svg>
+			</a>
+			<button id="btn-reset" class="btn-secondary-sm">Reset</button>
+			<button id="btn-copy" class="btn-primary-sm">Copy MD</button>
+		</nav>
+	</header>
+
+	<!-- Main Fourfold Workspace -->
+	<div class="workbench-main">
+		<!-- Sidebar Nav (Astro Docs Category Hierarchy) -->
+		<aside class="workbench-sidebar">
+			<div class="sidebar-header">
+				<span class="sidebar-title">DOCUMENTATION</span>
+				<span id="doc-count-badge" class="count-badge">{DOC_PRESETS.length}</span>
+			</div>
+			
+			<div class="doc-nav-list" id="doc-nav-list">
+				{DOC_PRESETS.map((preset, index) => (
+					<button 
+						class={`doc-nav-item ${index === 0 ? 'active' : ''}`}
+						data-id={preset.id}
+						data-category={preset.category}
+						data-title={preset.title.toLowerCase()}
+					>
+						<div class="doc-item-meta">
+							<span class="doc-item-category">{preset.category}</span>
+						</div>
+						<span class="doc-item-title">{preset.title}</span>
+					</button>
+				))}
+			</div>
+
+			<div class="sidebar-footer">
+				<div class="status-indicator">
+					<span class="status-dot pulse"></span>
+					<span class="status-text">Eve Analyzer Engine Ready</span>
+				</div>
+			</div>
+		</aside>
+
+		<!-- Editor Pane (Center/Left) -->
+		<div class="pane editor-pane">
+			<div class="pane-header">
+				<div class="pane-header-left">
+					<span class="pane-icon">📝</span>
+					<span class="pane-title">Markdown Memory Editor</span>
+				</div>
+				<span class="pane-hint">Live Reactive Sync</span>
+			</div>
+			<textarea id="markdown-input" spellcheck="false" placeholder="Type Markdown here..."></textarea>
+		</div>
+
+		<!-- Preview Pane (Right: Eve Inspector View) -->
+		<div class="pane preview-pane">
+			<div class="pane-header">
+				<div class="pane-header-left">
+					<span class="pane-icon">🔍</span>
+					<span class="pane-title">Eve Inspector & Live Render</span>
+				</div>
+				<span class="pane-hint" id="current-doc-title">Minimatic Workbench</span>
+			</div>
+			<div id="preview-output" class="markdown-body"></div>
+		</div>
+	</div>
+</div>
+
+<script>
+import { marked } from 'marked';
+import { renderMMT } from '../utils/mmt-engine.js';
+import { renderMinimatic } from '../utils/minimatic-engine.js';
+import { runPythonCode } from '../utils/python-engine.js';
+import { DOC_PRESETS } from '../data/docs.js';
+
+let activeDocId = DOC_PRESETS[0].id;
+let docContentMap = {};
+
+// Load saved or default contents
+DOC_PRESETS.forEach(doc => {
+	const saved = localStorage.getItem('doc_content_' + doc.id);
+	docContentMap[doc.id] = saved || doc.content;
+});
+
+const editorInput = document.getElementById('markdown-input') as HTMLTextAreaElement;
+const previewOutput = document.getElementById('preview-output') as HTMLDivElement;
+const currentTitleEl = document.getElementById('current-doc-title') as HTMLSpanElement;
+const searchInput = document.getElementById('doc-search-input') as HTMLInputElement;
+
+function loadDocument(id: string) {
+	activeDocId = id;
+	const doc = DOC_PRESETS.find(d => d.id === id) || DOC_PRESETS[0];
+	if (currentTitleEl) currentTitleEl.innerText = doc.title;
+	editorInput.value = docContentMap[id];
+
+	document.querySelectorAll('.doc-nav-item').forEach(el => {
+		if (el.getAttribute('data-id') === id) {
+			el.classList.add('active');
+		} else {
+			el.classList.remove('active');
+		}
+	});
+
+	updatePreview();
+}
+
+async function updatePreview() {
+	const text = editorInput.value;
+	docContentMap[activeDocId] = text;
+	localStorage.setItem('doc_content_' + activeDocId, text);
+
+	let html = marked.parse(text) as string;
+
+	const tempDiv = document.createElement('div');
+	tempDiv.innerHTML = html;
+
+	const pythonBlocksToRun = [];
+
+	tempDiv.querySelectorAll('pre code').forEach((codeEl, index) => {
+		const langClass = codeEl.className || '';
+		const codeText = codeEl.textContent || '';
+		const preParent = codeEl.parentElement;
+
+		if (langClass.includes('language-mmt')) {
+			const mmtHtml = renderMMT(codeText);
+			const wrapper = document.createElement('div');
+			wrapper.innerHTML = mmtHtml;
+			preParent?.replaceWith(wrapper);
+		} else if (langClass.includes('language-minimatic')) {
+			const miniHtml = renderMinimatic(codeText);
+			const wrapper = document.createElement('div');
+			wrapper.innerHTML = miniHtml;
+			preParent?.replaceWith(wrapper);
+		} else if (langClass.includes('language-python')) {
+			const outputId = 'py_out_' + Math.random().toString(36).substr(2, 6);
+			const wrapper = document.createElement('div');
+			wrapper.style.margin = '16px 0';
+			wrapper.style.border = '1px solid var(--outline)';
+			wrapper.style.borderRadius = '12px';
+			wrapper.style.padding = '16px';
+			wrapper.style.background = '#ffffff';
+
+			wrapper.innerHTML = `
+				<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+					<span style="font-weight: 600; font-size: 13px; color: #17805e;">🐍 Python Evaluator</span>
+					<button class="run-py-btn" style="background: #17805e; color: #ffffff; border: none; padding: 4px 12px; border-radius: 9999px; font-size: 12px; cursor: pointer; font-weight: 600;">Run Code</button>
+				</div>
+				<pre style="background: #f7f2eb; padding: 10px; border-radius: 8px; font-size: 13px; margin-bottom: 10px;"><code>${codeText}</code></pre>
+				<div id="${outputId}" class="py-output"></div>
+			`;
+
+			preParent?.replaceWith(wrapper);
+			pythonBlocksToRun.push({ codeText, outputId, btn: wrapper.querySelector('.run-py-btn') });
+		}
+	});
+
+	previewOutput.innerHTML = tempDiv.innerHTML;
+
+	pythonBlocksToRun.forEach(item => {
+		if (item.btn) {
+			item.btn.addEventListener('click', () => {
+				runPythonCode(item.codeText, item.outputId);
+			});
+		}
+		runPythonCode(item.codeText, item.outputId);
+	});
+}
+
+// Search Filter & Nav category filter
+searchInput?.addEventListener('input', (e) => {
+	const query = (e.target as HTMLInputElement).value.toLowerCase();
+	filterDocs(query, activeCategoryFilter);
+});
+
+let activeCategoryFilter = 'all';
+
+document.querySelectorAll('.nav-link-btn').forEach(btn => {
+	btn.addEventListener('click', (e) => {
+		const target = e.currentTarget as HTMLElement;
+		const filter = target.getAttribute('data-filter') || 'all';
+		activeCategoryFilter = filter;
+
+		document.querySelectorAll('.nav-link-btn').forEach(b => b.classList.remove('active'));
+		target.classList.add('active');
+
+		filterDocs(searchInput?.value.toLowerCase() || '', filter);
+	});
+});
+
+function filterDocs(searchQuery: string, categoryFilter: string) {
+	let visibleCount = 0;
+	document.querySelectorAll('.doc-nav-item').forEach(item => {
+		const el = item as HTMLElement;
+		const title = el.getAttribute('data-title') || '';
+		const cat = el.getAttribute('data-category') || '';
+
+		const matchesSearch = title.includes(searchQuery);
+		const matchesCategory = categoryFilter === 'all' || cat === categoryFilter;
+
+		if (matchesSearch && matchesCategory) {
+			el.style.display = 'flex';
+			visibleCount++;
+		} else {
+			el.style.display = 'none';
+		}
+	});
+
+	const badge = document.getElementById('doc-count-badge');
+	if (badge) badge.innerText = String(visibleCount);
+}
+
+// Keyboards shortcut '/' to focus search
+window.addEventListener('keydown', (e) => {
+	if (e.key === '/' && document.activeElement !== editorInput && document.activeElement !== searchInput) {
+		e.preventDefault();
+		searchInput?.focus();
+	}
+});
+
+// Event Listeners
+editorInput.addEventListener('input', () => {
+	updatePreview();
+});
+
+document.querySelectorAll('.doc-nav-item').forEach(btn => {
+	btn.addEventListener('click', (e) => {
+		const target = e.currentTarget as HTMLElement;
+		const id = target.getAttribute('data-id');
+		if (id) loadDocument(id);
+	});
+});
+
+document.getElementById('btn-reset')?.addEventListener('click', () => {
+	const doc = DOC_PRESETS.find(d => d.id === activeDocId);
+	if (doc) {
+		docContentMap[activeDocId] = doc.content;
+		localStorage.removeItem('doc_content_' + activeDocId);
+		editorInput.value = doc.content;
+		updatePreview();
+	}
+});
+
+document.getElementById('btn-copy')?.addEventListener('click', () => {
+	navigator.clipboard.writeText(editorInput.value);
+	const btn = document.getElementById('btn-copy');
+	if (btn) {
+		btn.innerText = 'Copied!';
+		setTimeout(() => btn.innerText = 'Copy MD', 2000);
+	}
+});
+
+// Initial load
+loadDocument(activeDocId);
+</script>
+
+<style>
+.workbench-container {
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+	width: 100vw;
+	overflow: hidden;
+	background: var(--surface);
+}
+
+/* Navbar (Astro Docs Style) */
+.navbar {
+	height: 60px;
+	background: var(--surface);
+	border-bottom: 1px solid var(--outline-variant);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 20px;
+	gap: 16px;
+}
+
+.navbar-brand-section {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 220px;
+}
+
+.brand-link {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	text-decoration: none;
+	color: var(--on-surface);
+}
+
+.brand-title {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 18px;
+	color: var(--on-surface);
+}
+
+.brand-subtitle {
+	font-weight: 500;
+	font-size: 14px;
+	color: var(--primary);
+}
+
+.version-badge {
+	background: var(--surface-container-high);
+	color: var(--on-surface-variant);
+	font-size: 11px;
+	font-weight: 600;
+	padding: 2px 8px;
+	border-radius: var(--radius-full);
+	border: 1px solid var(--outline);
+}
+
+/* Search bar */
+.navbar-search {
+	position: relative;
+	flex: 1;
+	max-width: 420px;
+	display: flex;
+	align-items: center;
+}
+
+.search-icon {
+	position: absolute;
+	left: 12px;
+	color: var(--on-surface-variant);
+}
+
+#doc-search-input {
+	width: 100%;
+	height: 38px;
+	padding: 0 14px 0 36px;
+	background: var(--surface-container-low);
+	border: 1px solid var(--outline);
+	border-radius: var(--radius-full);
+	font-family: var(--font-body);
+	font-size: 13px;
+	color: var(--on-surface);
+	outline: none;
+	transition: all 0.2s ease;
+}
+
+#doc-search-input:focus {
+	border-color: var(--primary);
+	box-shadow: 0 0 0 3px rgba(23, 128, 94, 0.1);
+	background: #ffffff;
+}
+
+/* Nav Links & Buttons */
+.navbar-links {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.nav-link-btn {
+	background: transparent;
+	border: none;
+	color: var(--on-surface-variant);
+	font-family: var(--font-body);
+	font-weight: 600;
+	font-size: 13px;
+	padding: 6px 12px;
+	border-radius: var(--radius-full);
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.nav-link-btn:hover {
+	color: var(--on-surface);
+	background: var(--surface-container-high);
+}
+
+.nav-link-btn.active {
+	color: var(--primary);
+	background: var(--primary-container);
+}
+
+.nav-github-link {
+	color: var(--on-surface-variant);
+	display: flex;
+	align-items: center;
+	padding: 6px;
+	border-radius: 50%;
+	transition: color 0.2s ease;
+}
+
+.nav-github-link:hover {
+	color: var(--primary);
+}
+
+.btn-primary-sm {
+	background: var(--primary);
+	color: var(--on-primary);
+	border: none;
+	border-radius: var(--radius-full);
+	padding: 6px 16px;
+	font-weight: 600;
+	font-size: 12px;
+	cursor: pointer;
+}
+
+.btn-secondary-sm {
+	background: transparent;
+	color: var(--on-surface);
+	border: 1px solid var(--outline);
+	border-radius: var(--radius-full);
+	padding: 6px 14px;
+	font-weight: 600;
+	font-size: 12px;
+	cursor: pointer;
+}
+
+/* Main Workspace Grid */
+.workbench-main {
+	display: grid;
+	grid-template-columns: 260px 1fr 1fr;
+	height: calc(100vh - 60px);
+	overflow: hidden;
+}
+
+/* Sidebar */
+.workbench-sidebar {
+	background: var(--surface-container-low);
+	border-right: 1px solid var(--outline-variant);
+	display: flex;
+	flex-direction: column;
+	padding: 16px 12px;
+}
+
+.sidebar-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 12px;
+	padding: 0 6px;
+}
+
+.sidebar-title {
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	color: var(--on-surface-variant);
+}
+
+.count-badge {
+	background: var(--surface-container-highest);
+	color: var(--on-surface);
+	font-size: 10px;
+	font-weight: 700;
+	padding: 2px 6px;
+	border-radius: 4px;
+}
+
+.doc-nav-list {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	flex: 1;
+	overflow-y: auto;
+}
+
+.doc-nav-item {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	padding: 10px 12px;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: var(--radius-md);
+	cursor: pointer;
+	text-align: left;
+	transition: all 0.2s ease;
+}
+
+.doc-nav-item:hover {
+	background: var(--surface-container-high);
+}
+
+.doc-nav-item.active {
+	background: #ffffff;
+	border-color: var(--primary);
+	box-shadow: var(--shadow-sm);
+}
+
+.doc-item-category {
+	font-size: 10px;
+	font-weight: 700;
+	color: var(--primary);
+	text-transform: uppercase;
+}
+
+.doc-item-title {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--on-surface);
+	margin-top: 2px;
+}
+
+.sidebar-footer {
+	padding-top: 12px;
+	border-top: 1px solid var(--outline);
+}
+
+.status-indicator {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 11px;
+	color: var(--on-surface-variant);
+}
+
+.status-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--primary);
+}
+
+.status-dot.pulse {
+	box-shadow: 0 0 0 0 rgba(23, 128, 94, 0.4);
+	animation: pulse-anim 2s infinite;
+}
+
+@keyframes pulse-anim {
+	0% { box-shadow: 0 0 0 0 rgba(23, 128, 94, 0.4); }
+	70% { box-shadow: 0 0 0 8px rgba(23, 128, 94, 0); }
+	100% { box-shadow: 0 0 0 0 rgba(23, 128, 94, 0); }
+}
+
+/* Panes */
+.pane {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow: hidden;
+}
+
+.editor-pane {
+	border-right: 1px solid var(--outline-variant);
+	background: #ffffff;
+}
+
+.preview-pane {
+	background: var(--surface-container);
+}
+
+.pane-header {
+	height: 40px;
+	background: var(--surface-container-low);
+	border-bottom: 1px solid var(--outline-variant);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 16px;
+}
+
+.pane-header-left {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.pane-title {
+	font-weight: 600;
+	font-size: 12px;
+	color: var(--on-surface);
+}
+
+.pane-hint {
+	font-size: 11px;
+	color: var(--on-surface-variant);
+}
+
+/* Editor Input */
+#markdown-input {
+	flex: 1;
+	width: 100%;
+	height: 100%;
+	padding: 20px;
+	border: none;
+	outline: none;
+	resize: none;
+	font-family: var(--font-mono);
+	font-size: 13px;
+	line-height: 1.6;
+	color: var(--on-surface);
+	background: #ffffff;
+}
+
+/* Preview Output */
+#preview-output {
+	flex: 1;
+	padding: 24px;
+	overflow-y: auto;
+	font-family: var(--font-body);
+	line-height: 1.6;
+	color: var(--on-surface);
+}
+
+#preview-output h1 {
+	font-size: 26px;
+	margin-top: 0;
+	color: var(--primary);
+	border-bottom: 2px solid var(--primary-container);
+	padding-bottom: 8px;
+}
+
+#preview-output h2 {
+	font-size: 18px;
+	margin-top: 20px;
+}
+
+#preview-output code {
+	background: var(--surface-container-high);
+	padding: 2px 6px;
+	border-radius: 4px;
+	font-size: 13px;
+	color: var(--primary);
+}
+
+#preview-output pre {
+	background: var(--surface-container-high);
+	padding: 14px;
+	border-radius: var(--radius-md);
+	overflow-x: auto;
+}
+
+#preview-output pre code {
+	background: transparent;
+	padding: 0;
+	color: inherit;
+}
+</style>
