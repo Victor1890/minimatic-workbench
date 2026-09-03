@@ -89,57 +89,57 @@ Object.entries(contentFiles).forEach(([filePath, content]) => {
 const totalDocsCount = docList.length;
 ---
 
-<div class="flex flex-col h-screen w-screen overflow-hidden bg-surface">
-	<!-- Navbar (Astro Docs Style: withastro/docs) -->
-	<header class="h-15 bg-surface border-b border-outline-variant flex items-center justify-between px-5 gap-4">
-		<div class="flex items-center gap-2.5 min-w-[200px]">
-			<a href="/" class="flex items-center gap-2 no-underline text-on-surface">
-				<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-					<path d="M12 2L2 22H6L12 10L18 22H22L12 2Z" fill="#17805e"/>
-					<circle cx="12" cy="15" r="2.5" fill="#a8d5c4"/>
+<div class="flex flex-col h-screen w-screen overflow-hidden bg-surface text-on-surface">
+	<!-- Navbar (web.dev Google Specs in DESIGN.md) -->
+	<header class="h-15 bg-surface border-b border-outline-variant flex items-center justify-between px-6 gap-4">
+		<div class="flex items-center gap-3 min-w-[220px]">
+			<a href="/" class="flex items-center gap-2.5 no-underline text-on-surface">
+				<svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+					<path d="M12 2L2 22H6L12 10L18 22H22L12 2Z" fill="#1b6ef3"/>
+					<circle cx="12" cy="15" r="2.5" fill="#a8c7fa"/>
 				</svg>
-				<span class="font-display font-bold text-lg">Minimatic</span>
-				<span class="font-medium text-sm text-primary">Docs</span>
+				<span class="font-display font-bold text-xl text-on-surface tracking-tight">Minimatic</span>
+				<span class="font-medium text-xs text-primary bg-primary-container px-2 py-0.5 rounded-full">Docs</span>
 			</a>
-			<span class="bg-surface-container-high text-on-surface-variant text-[11px] font-semibold px-2 py-0.5 rounded-full border border-outline">v0.1</span>
+			<span class="bg-surface-container-high text-on-surface-variant text-[11px] font-semibold px-2 py-0.5 rounded-full border border-outline-variant">v0.1</span>
 		</div>
 
-		<!-- Search Input (Astro Docs style) -->
-		<div class="relative flex-1 max-w-[420px] flex items-center">
-			<svg class="absolute left-3 text-on-surface-variant" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+		<!-- Search Input (web.dev pill input spec) -->
+		<div class="relative flex-1 max-w-[440px] flex items-center">
+			<svg class="absolute left-3.5 text-on-surface-variant" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 				<circle cx="11" cy="11" r="8"></circle>
 				<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
 			</svg>
-			<input type="text" id="doc-search-input" placeholder="Search documentation... (Press '/')" class="w-full h-9.5 pl-9 pr-3.5 bg-surface-container-low border border-outline rounded-full text-xs text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 focus:bg-white transition-all" />
+			<input type="text" id="doc-search-input" placeholder="Search documentation... (Press '/')" class="w-full h-10 pl-10 pr-4 bg-surface-dim border border-outline-variant rounded-full text-xs text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 focus:bg-white transition-all" />
 		</div>
 
 		<!-- Nav Links -->
-		<nav class="flex items-center gap-2">
-			<button class="nav-link-btn active bg-primary-container text-primary font-semibold text-xs px-3 py-1.5 rounded-full cursor-pointer hover:bg-primary-container/80 transition-colors" data-filter="all">All</button>
-			<a href="https://github.com/gabrielebaez/minimatic-kernel" target="_blank" rel="noopener" class="text-on-surface-variant hover:text-primary p-1.5 rounded-full transition-colors flex items-center" title="GitHub Repository">
+		<nav class="flex items-center gap-2.5">
+			<button class="nav-link-btn active bg-primary text-on-primary font-medium text-xs px-4 py-2 rounded-full cursor-pointer hover:bg-primary-hover shadow-xs transition-all" data-filter="all">All</button>
+			<a href="https://github.com/gabrielebaez/minimatic-kernel" target="_blank" rel="noopener" class="text-on-surface-variant hover:text-primary p-2 rounded-full transition-colors flex items-center" title="GitHub Repository">
 				<Icon name="github" class="w-5 h-5" />
 			</a>
-			<button id="btn-reset" class="bg-transparent text-on-surface border border-outline rounded-full px-3.5 py-1.5 font-semibold text-xs cursor-pointer hover:bg-surface-container-high transition-colors">Reset</button>
-			<button id="btn-copy" class="bg-primary text-on-primary border-none rounded-full px-4 py-1.5 font-semibold text-xs cursor-pointer hover:bg-primary-hover shadow-sm transition-colors">Copy MD</button>
+			<button id="btn-reset" class="bg-transparent text-on-surface border border-outline-variant rounded-full px-4 py-1.5 font-medium text-xs cursor-pointer hover:bg-surface-container-high transition-colors">Reset</button>
+			<button id="btn-copy" class="bg-primary text-on-primary border-none rounded-full px-4 py-2 font-medium text-xs cursor-pointer hover:bg-primary-hover shadow-xs transition-colors">Copy MD</button>
 		</nav>
 	</header>
 
 	<!-- Main Fourfold Workspace -->
 	<div class="grid grid-cols-[280px_1fr_1fr] h-[calc(100vh-60px)] overflow-hidden">
 		<!-- Sidebar Nav (Astro Docs Recursive Folder Tree) -->
-		<aside class="bg-surface-container-low border-r border-outline-variant flex flex-col p-4 overflow-hidden">
+		<aside class="bg-surface-container-lowest border-r border-outline-variant flex flex-col p-4 overflow-hidden">
 			<div class="flex items-center justify-between mb-3 px-2">
 				<span class="text-[11px] font-bold tracking-wider text-on-surface-variant">DOCUMENTATION</span>
-				<span id="doc-count-badge" class="bg-surface-container-highest text-on-surface text-[10px] font-bold px-1.5 py-0.5 rounded">{totalDocsCount}</span>
+				<span id="doc-count-badge" class="bg-surface-container-high text-on-primary-container text-[10px] font-bold px-2 py-0.5 rounded-full">{totalDocsCount}</span>
 			</div>
 			
 			<nav class="flex-1 overflow-y-auto pr-1">
-				<ul class="flex flex-col gap-1.5 list-none m-0 p-0 top-level">
+				<ul class="flex flex-col gap-1 list-none m-0 p-0 top-level">
 					{treeRoot.map((node) => (
 						<li class="list-none group-li">
 							{node.type === 'folder' ? (
 								<details open class="block group-details">
-									<summary class="flex items-center justify-between px-2.5 py-1.5 rounded-md cursor-pointer select-none hover:bg-surface-container-high transition-colors group-summary">
+									<summary class="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer select-none hover:bg-surface-container-high transition-colors group-summary">
 										<span class="group-label">
 											<span class="text-xs font-bold text-on-surface uppercase tracking-wide large">{node.displayName}</span>
 										</span>
@@ -147,12 +147,12 @@ const totalDocsCount = docList.length;
 											<path d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"></path>
 										</svg>
 									</summary>
-									<ul class="list-none my-1 ml-3 pl-2 border-l border-outline flex flex-col gap-0.5 sub-level">
+									<ul class="list-none my-1 ml-3 pl-2 border-l border-outline-variant flex flex-col gap-0.5 sub-level">
 										{node.children?.map((child) => (
 											<li class="list-none sub-li">
 												{child.type === 'folder' ? (
 													<details open class="block group-details">
-														<summary class="flex items-center justify-between px-2.5 py-1 rounded-md cursor-pointer select-none hover:bg-surface-container-high transition-colors group-summary">
+														<summary class="flex items-center justify-between px-2.5 py-1.5 rounded-md cursor-pointer select-none hover:bg-surface-container-high transition-colors group-summary">
 															<span class="group-label">
 																<span class="text-xs font-semibold text-on-surface">{child.displayName}</span>
 															</span>
@@ -160,12 +160,12 @@ const totalDocsCount = docList.length;
 																<path d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"></path>
 															</svg>
 														</summary>
-														<ul class="list-none my-1 ml-3 pl-2 border-l border-outline flex flex-col gap-0.5 sub-level">
+														<ul class="list-none my-1 ml-3 pl-2 border-l border-outline-variant flex flex-col gap-0.5 sub-level">
 															{child.children?.map((grandChild) => (
 																<li class="list-none sub-li">
 																	<a 
 																		href={`/docs/${grandChild.slug}`}
-																		class="doc-link-btn block w-full text-left bg-transparent border-none px-2.5 py-1 text-xs font-medium text-on-surface-variant rounded cursor-pointer hover:bg-surface-container-high hover:text-on-surface transition-all no-underline"
+																		class="doc-link-btn block w-full text-left bg-transparent border-none px-2.5 py-1.5 text-xs font-medium text-on-surface-variant rounded-md cursor-pointer hover:bg-surface-container-high hover:text-primary transition-all no-underline"
 																		data-id={grandChild.id}
 																		data-slug={grandChild.slug}
 																		data-title={grandChild.displayName.toLowerCase()}
@@ -179,7 +179,7 @@ const totalDocsCount = docList.length;
 												) : (
 													<a 
 														href={`/docs/${child.slug}`}
-														class="doc-link-btn block w-full text-left bg-transparent border-none px-2.5 py-1.5 text-xs font-medium text-on-surface-variant rounded cursor-pointer hover:bg-surface-container-high hover:text-on-surface transition-all no-underline"
+														class="doc-link-btn block w-full text-left bg-transparent border-none px-2.5 py-1.5 text-xs font-medium text-on-surface-variant rounded-md cursor-pointer hover:bg-surface-container-high hover:text-primary transition-all no-underline"
 														data-id={child.id}
 														data-slug={child.slug}
 														data-title={child.displayName.toLowerCase()}
@@ -194,7 +194,7 @@ const totalDocsCount = docList.length;
 							) : (
 								<a 
 									href={`/docs/${node.slug}`}
-									class="doc-link-btn block w-full text-left bg-transparent border-none px-2.5 py-1.5 text-xs font-medium text-on-surface-variant rounded cursor-pointer hover:bg-surface-container-high hover:text-on-surface transition-all no-underline"
+									class="doc-link-btn block w-full text-left bg-transparent border-none px-2.5 py-1.5 text-xs font-medium text-on-surface-variant rounded-md cursor-pointer hover:bg-surface-container-high hover:text-primary transition-all no-underline"
 									data-id={node.id}
 									data-slug={node.slug}
 									data-title={node.displayName.toLowerCase()}
@@ -207,10 +207,10 @@ const totalDocsCount = docList.length;
 				</ul>
 			</nav>
 
-			<div class="pt-3 border-t border-outline">
+			<div class="pt-3 border-t border-outline-variant">
 				<div class="flex items-center gap-2 text-xs text-on-surface-variant">
 					<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-					<span>astro-icon Active</span>
+					<span>Google Material 3 Specs</span>
 				</div>
 			</div>
 		</aside>
@@ -223,9 +223,9 @@ const totalDocsCount = docList.length;
 					<span class="font-semibold text-xs text-on-surface">Document Editor</span>
 				</div>
 				<!-- View Mode Toggle -->
-				<div class="flex items-center bg-surface-container-high rounded-lg p-0.5 border border-outline">
-					<button id="view-mode-editor" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-white text-primary shadow-xs cursor-pointer transition-all">Edit Source</button>
-					<button id="view-mode-rendered" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-md text-on-surface-variant hover:text-on-surface cursor-pointer transition-all">Rendered Doc</button>
+				<div class="flex items-center bg-surface-container-high rounded-full p-0.5 border border-outline-variant">
+					<button id="view-mode-editor" class="text-[11px] font-semibold px-3 py-0.5 rounded-full bg-white text-primary shadow-xs cursor-pointer transition-all">Edit Source</button>
+					<button id="view-mode-rendered" class="text-[11px] font-semibold px-3 py-0.5 rounded-full text-on-surface-variant hover:text-on-surface cursor-pointer transition-all">Rendered Doc</button>
 				</div>
 			</div>
 			
@@ -237,13 +237,13 @@ const totalDocsCount = docList.length;
 		</div>
 
 		<!-- Right Pane: Code Outputs & Inspector Only -->
-		<div class="flex flex-col h-full overflow-hidden bg-surface-container">
-			<div class="h-10 bg-surface-container-low border-b border-outline-variant flex items-center justify-between px-4 flex-shrink-0">
+		<div class="flex flex-col h-full overflow-hidden bg-surface-container-low">
+			<div class="h-10 bg-surface border-b border-outline-variant flex items-center justify-between px-4 flex-shrink-0">
 				<div class="flex items-center gap-1.5">
 					<span class="text-xs">⚡</span>
 					<span class="font-semibold text-xs text-on-surface">Code Output Inspector</span>
 				</div>
-				<span class="text-[11px] text-on-surface-variant" id="current-doc-title">{initialTitle || "Minimatic Workbench"}</span>
+				<span class="text-[11px] font-medium text-on-surface-variant" id="current-doc-title">{initialTitle || "Minimatic Workbench"}</span>
 			</div>
 
 			<div id="inspector-output-pane" class="flex-1 p-6 overflow-y-auto space-y-6">
@@ -350,11 +350,11 @@ function initCodeMirror(initialDoc: string) {
 
 	const customTheme = EditorView.theme({
 		"&": { height: "100%", fontSize: "13px" },
-		".cm-scroller": { overflow: "auto", fontFamily: "'Fira Code', monospace" },
+		".cm-scroller": { overflow: "auto", fontFamily: "'Roboto Mono', 'Fira Code', monospace" },
 		".cm-content": { padding: "16px 20px" },
-		".cm-gutters": { backgroundColor: "#f7f2eb", borderRight: "1px solid #c7c4c2", color: "#95908d" },
-		".cm-activeLine": { backgroundColor: "rgba(23, 128, 94, 0.05)" },
-		".cm-activeLineGutter": { backgroundColor: "#e9ded8", color: "#17805e" }
+		".cm-gutters": { backgroundColor: "#f7f9ff", borderRight: "1px solid #bdc1c6", color: "#5f6368" },
+		".cm-activeLine": { backgroundColor: "rgba(27, 110, 243, 0.05)" },
+		".cm-activeLineGutter": { backgroundColor: "#e8f0fe", color: "#1b6ef3" }
 	});
 
 	const state = EditorState.create({
@@ -425,9 +425,9 @@ function loadDocumentBySlug(slug: string, pushState = false) {
 
 	document.querySelectorAll('.doc-link-btn').forEach(el => {
 		if (el.getAttribute('data-slug') === doc.slug || el.getAttribute('data-id') === doc.id) {
-			el.classList.add('!bg-primary-container', '!text-primary', '!font-semibold');
+			el.classList.add('!bg-primary-container', '!text-on-primary-container', '!font-semibold');
 		} else {
-			el.classList.remove('!bg-primary-container', '!text-primary', '!font-semibold');
+			el.classList.remove('!bg-primary-container', '!text-on-primary-container', '!font-semibold');
 		}
 	});
 
@@ -453,11 +453,11 @@ function evaluateCodeOutputs(markdownText: string) {
 			foundCodeBlocks++;
 			const mmtHtml = renderMMT(codeText);
 			const card = document.createElement('div');
-			card.className = 'bg-white border border-outline rounded-xl p-4 shadow-sm';
+			card.className = 'bg-white border border-outline-variant rounded-2xl p-5 shadow-xs';
 			card.innerHTML = `
 				<div class="flex items-center justify-between mb-3 border-b border-outline-variant pb-2">
 					<span class="font-bold text-xs text-primary">📐 MMT Diagram & Table Output</span>
-					<span class="text-[10px] font-mono bg-surface-container-high px-2 py-0.5 rounded text-on-surface-variant">Block #${index}</span>
+					<span class="text-[10px] font-mono bg-surface-container-high text-on-primary-container px-2.5 py-0.5 rounded-full font-semibold">Block #${index}</span>
 				</div>
 				${mmtHtml}
 			`;
@@ -466,11 +466,11 @@ function evaluateCodeOutputs(markdownText: string) {
 			foundCodeBlocks++;
 			const miniHtml = renderMinimatic(codeText);
 			const card = document.createElement('div');
-			card.className = 'bg-white border border-outline rounded-xl p-4 shadow-sm';
+			card.className = 'bg-white border border-outline-variant rounded-2xl p-5 shadow-xs';
 			card.innerHTML = `
 				<div class="flex items-center justify-between mb-3 border-b border-outline-variant pb-2">
 					<span class="font-bold text-xs text-primary">⚡ Minimatic State Analyzer Output</span>
-					<span class="text-[10px] font-mono bg-surface-container-high px-2 py-0.5 rounded text-on-surface-variant">Block #${index}</span>
+					<span class="text-[10px] font-mono bg-surface-container-high text-on-primary-container px-2.5 py-0.5 rounded-full font-semibold">Block #${index}</span>
 				</div>
 				${miniHtml}
 			`;
@@ -479,13 +479,13 @@ function evaluateCodeOutputs(markdownText: string) {
 			foundCodeBlocks++;
 			const outputId = 'py_inspector_out_' + index;
 			const card = document.createElement('div');
-			card.className = 'bg-white border border-outline rounded-xl p-4 shadow-sm';
+			card.className = 'bg-white border border-outline-variant rounded-2xl p-5 shadow-xs';
 			card.innerHTML = `
 				<div class="flex items-center justify-between mb-3 border-b border-outline-variant pb-2">
 					<span class="font-bold text-xs text-primary">🐍 Python Code Output Console</span>
-					<button class="run-py-btn bg-primary text-on-primary border-none text-[11px] font-semibold px-3 py-1 rounded-full cursor-pointer hover:bg-primary-hover transition-colors">Run Code</button>
+					<button class="run-py-btn bg-primary text-on-primary border-none text-[11px] font-medium px-3.5 py-1 rounded-full cursor-pointer hover:bg-primary-hover transition-colors">Run Code</button>
 				</div>
-				<pre class="bg-surface-container-low p-3 rounded-lg text-xs font-mono mb-3 overflow-x-auto"><code>${codeText}</code></pre>
+				<pre class="bg-surface-container-low p-3.5 rounded-xl text-xs font-mono mb-3 overflow-x-auto border border-outline-variant"><code>${codeText}</code></pre>
 				<div id="${outputId}" class="py-output"></div>
 			`;
 			inspectorPane.appendChild(card);
@@ -500,7 +500,7 @@ function evaluateCodeOutputs(markdownText: string) {
 
 	if (foundCodeBlocks === 0) {
 		inspectorPane.innerHTML = `
-			<div class="bg-white border border-outline rounded-xl p-8 text-center text-on-surface-variant">
+			<div class="bg-white border border-outline-variant rounded-2xl p-8 text-center text-on-surface-variant">
 				<div class="text-3xl mb-2">🔍</div>
 				<div class="font-bold text-sm text-on-surface mb-1">No Code Executables Found</div>
 				<div class="text-xs">Add a <code>\`\`\`python</code>, <code>\`\`\`mmt</code>, or <code>\`\`\`minimatic</code> block in the CodeMirror editor to see live visual output.</div>
@@ -594,32 +594,34 @@ details[open] > summary .caret {
 	height: 100%;
 }
 
-/* Rich Markdown Rendered Document Typography */
+/* Rich Markdown Rendered Document Typography (DESIGN.md Material 3 specs) */
 .markdown-render-body h1 {
 	font-family: var(--font-display);
-	font-size: 1.75rem;
+	font-size: 2rem;
 	font-weight: 700;
-	color: #17805e;
-	border-bottom: 2px solid #a8d5c4;
+	color: #1b6ef3;
+	border-bottom: 2px solid #e8f0fe;
 	padding-bottom: 0.5rem;
 	margin-bottom: 1.25rem;
 	margin-top: 0;
+	letter-spacing: -0.02em;
 }
 
 .markdown-render-body h2 {
 	font-family: var(--font-display);
-	font-size: 1.35rem;
-	font-weight: 700;
-	color: #1b1c1c;
+	font-size: 1.45rem;
+	font-weight: 600;
+	color: #202124;
 	margin-top: 1.75rem;
 	margin-bottom: 0.75rem;
+	letter-spacing: -0.01em;
 }
 
 .markdown-render-body h3 {
 	font-family: var(--font-display);
-	font-size: 1.15rem;
-	font-weight: 700;
-	color: #1b1c1c;
+	font-size: 1.2rem;
+	font-weight: 600;
+	color: #202124;
 	margin-top: 1.5rem;
 	margin-bottom: 0.5rem;
 }
@@ -627,23 +629,23 @@ details[open] > summary .caret {
 .markdown-render-body p {
 	margin-bottom: 1rem;
 	line-height: 1.65;
-	color: #1b1c1c;
+	color: #202124;
 }
 
 .markdown-render-body code {
-	background: #e9ded8;
+	background: #e8f0fe;
 	padding: 0.15rem 0.4rem;
 	border-radius: 0.25rem;
-	font-size: 0.8125rem;
-	color: #17805e;
-	font-family: 'Fira Code', monospace;
+	font-size: 0.85rem;
+	color: #0b57d0;
+	font-family: 'Roboto Mono', monospace;
 }
 
 .markdown-render-body pre {
-	background: #f7f2eb;
-	border: 1px solid #c7c4c2;
+	background: #f7f9ff;
+	border: 1px solid #bdc1c6;
 	padding: 1rem;
-	border-radius: 0.5rem;
+	border-radius: 0.75rem;
 	overflow-x: auto;
 	margin-bottom: 1.25rem;
 }
@@ -672,12 +674,12 @@ details[open] > summary .caret {
 }
 
 .markdown-render-body blockquote {
-	border-left: 4px solid #17805e;
-	background: #f7f2eb;
+	border-left: 4px solid #1b6ef3;
+	background: #ecf3fe;
 	padding: 0.75rem 1rem;
 	margin-bottom: 1.25rem;
 	border-radius: 0 0.5rem 0.5rem 0;
-	color: #95908d;
+	color: #5f6368;
 	font-style: italic;
 }
 
@@ -688,14 +690,14 @@ details[open] > summary .caret {
 }
 
 .markdown-render-body th, .markdown-render-body td {
-	border: 1px solid #c7c4c2;
+	border: 1px solid #bdc1c6;
 	padding: 0.5rem 0.75rem;
 	text-align: left;
 }
 
 .markdown-render-body th {
-	background: #f7f2eb;
+	background: #ecf3fe;
 	font-weight: 600;
-	color: #17805e;
+	color: #0b57d0;
 }
 </style>

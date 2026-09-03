@@ -9,25 +9,25 @@ importers:
   .:
     dependencies:
       '@codemirror/lang-markdown':
-        specifier: ^6.5.2
+        specifier: 6.5.2
         version: 6.5.2
       '@codemirror/state':
-        specifier: ^6.7.2
+        specifier: 6.7.2
         version: 6.7.2
       '@tailwindcss/vite':
         specifier: 4.3.3
         version: 4.3.3(vite@8.2.2(esbuild@0.28.2)(jiti@2.7.0))
       astro:
-        specifier: ^7.3.0
+        specifier: 7.3.0
         version: 7.3.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(jiti@2.7.0)
       astro-icon:
-        specifier: ^1.2.0
+        specifier: 1.2.0
         version: 1.2.0
       codemirror:
-        specifier: ^6.0.2
+        specifier: 6.0.2
         version: 6.0.2
       marked:
-        specifier: ^18.0.11
+        specifier: 18.0.11
         version: 18.0.11
       tailwindcss:
         specifier: 4.3.3
