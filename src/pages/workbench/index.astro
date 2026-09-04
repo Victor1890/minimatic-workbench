@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { Icon } from 'astro-icon/components';
+import { PRESET_OPTIONS } from '../../core/content';
 ---
 
 <Layout title="Minimatic Workbench | Tour Sandbox">
@@ -28,18 +29,12 @@ import { Icon } from 'astro-icon/components';
 					<span class="bg-white/20 text-white text-[10px] font-mono px-1.5 py-0.5 rounded ml-1">⌘↵</span>
 				</button>
 
-				<!-- Official Tour Presets Dropdown -->
+				<!-- Official Tour Presets Dropdown (Mapped Array Best Practice) -->
 				<div class="relative">
 					<select id="wb-preset-select" class="h-9 pl-3.5 pr-8 bg-surface-dim border border-outline-variant rounded-full text-xs font-medium text-on-surface outline-none cursor-pointer focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all appearance-none">
-						<option value="tour_full">Full Tour: All Examples</option>
-						<option value="tour_specificity">1. Specificity Beats Order</option>
-						<option value="tour_recursion">2. Recursion Base Cases</option>
-						<option value="tour_fizzbuzz">3. Multi-Argument Specificity (FizzBuzz)</option>
-						<option value="tour_sequence">4. Sequence Blanks & Listables</option>
-						<option value="tour_rewrites">5. Data Rewriting (/.)</option>
-						<option value="tour_lambdas">6. Lambdas & Currying</option>
-						<option value="tour_pipelines">7. Pipes, Map & Fold</option>
-						<option value="tour_control">8. Control Flow (if & switch)</option>
+						{PRESET_OPTIONS.map(opt => (
+							<option value={opt.value}>{opt.label}</option>
+						))}
 					</select>
 					<svg class="absolute right-3 top-2.5 text-on-surface-variant pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
 						<path d="M7 10l5 5 5-5z"></path>

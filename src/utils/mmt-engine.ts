@@ -3,13 +3,28 @@
  * Parses MMT blocks into visual SVG diagrams and structured UI components.
  */
 
-export function renderMMT(code) {
+interface Link {
+  from: string;
+  to: string;
+}
+
+interface TableRow {
+  key: string;
+  value: string;
+}
+
+interface TableData {
+  title: string;
+  rows: TableRow[];
+}
+
+export function renderMMT(code: string): string {
   const lines = code.split('\n').map(l => l.trim()).filter(Boolean);
   let title = 'MMT Diagram';
-  const nodes = [];
-  const links = [];
-  const tables = [];
-  let currentTable = null;
+  const nodes: string[] = [];
+  const links: Link[] = [];
+  const tables: TableData[] = [];
+  let currentTable: TableData | null = null;
 
   lines.forEach(line => {
     if (line.startsWith('title:')) {
@@ -38,10 +53,9 @@ export function renderMMT(code) {
 
   if (currentTable) tables.push(currentTable);
 
-  // Generate SVG Diagram for nodes & links
   let svgContent = '';
   if (nodes.length > 0) {
-    const nodeX = {};
+    const nodeX: Record<string, { x: number; y: number }> = {};
     const width = 500;
     const height = 120 + Math.ceil(nodes.length / 3) * 60;
     
@@ -84,7 +98,6 @@ export function renderMMT(code) {
     `;
   }
 
-  // Generate HTML for tables
   let tablesHtml = '';
   tables.forEach(tbl => {
     const rowsHtml = tbl.rows.map(r => `

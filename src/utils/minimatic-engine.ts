@@ -3,13 +3,19 @@
  * Parses reactive minimatic code blocks and returns interactive state tables & data analyzers.
  */
 
-export function renderMinimatic(code) {
+declare global {
+  interface Window {
+    runMinimaticAction?: (wId: string, bIdx: number, rawAction: string) => void;
+  }
+}
+
+export function renderMinimatic(code: string): string {
   const lines = code.split('\n').map(l => l.trim()).filter(Boolean);
   
   let initialState = 0;
   let stateName = 'val';
-  const buttons = [];
-  const definitions = [];
+  const buttons: { label: string; action: string }[] = [];
+  const definitions: string[] = [];
 
   lines.forEach(line => {
     if (line.startsWith('state')) {
@@ -73,8 +79,8 @@ export function renderMinimatic(code) {
     </div>
   `;
 
-  if (!window.runMinimaticAction) {
-    window.runMinimaticAction = function(wId, bIdx, rawAction) {
+  if (typeof window !== 'undefined' && !window.runMinimaticAction) {
+    window.runMinimaticAction = function(wId: string, bIdx: number, rawAction: string) {
       const stateEl = document.getElementById(wId + '_state');
       const boxEl = document.getElementById(wId + '_box');
       if (!stateEl) return;
@@ -89,7 +95,7 @@ export function renderMinimatic(code) {
       } else {
         curr = parseInt(act, 10) || 0;
       }
-      stateEl.innerText = curr;
+      stateEl.innerText = String(curr);
       if (boxEl) {
         boxEl.innerText = `Evaluated (${stateName}): ${curr}`;
       }

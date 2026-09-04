@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { Icon } from 'astro-icon/components';
+import { FEATURE_CARDS, SYNTAX_CARDS } from '../core/content';
 ---
 
 <Layout title="Minimatic | Embeddable Expression Language Kernel">
@@ -85,7 +86,7 @@ double(21)
 		</div>
 	</section>
 
-	<!-- Features / Pillars Section -->
+	<!-- Features / Pillars Section (Mapped Array Best Practice) -->
 	<section class="py-20 px-6 bg-surface">
 		<div class="max-w-7xl mx-auto">
 			<div class="text-center max-w-2xl mx-auto mb-14">
@@ -94,42 +95,18 @@ double(21)
 			</div>
 
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-				<div class="bg-surface-container border border-surface-variant hover:border-outline hover:bg-surface-container-high p-8 rounded-2xl shadow-sm hover:shadow-md transition-all">
-					<div class="text-3xl mb-4">🧩</div>
-					<h3 class="font-display font-bold text-lg mb-2 text-on-surface">Everything is head(args)</h3>
-					<p class="text-sm leading-relaxed text-on-surface-variant">
-						No statements or special forms. Arithmetic, conditionals, and control flow are function applications in disguise.
-					</p>
-				</div>
-
-				<div class="bg-surface-container border border-surface-variant hover:border-outline hover:bg-surface-container-high p-8 rounded-2xl shadow-sm hover:shadow-md transition-all">
-					<div class="text-3xl mb-4">🎯</div>
-					<h3 class="font-display font-bold text-lg mb-2 text-on-surface">Specificity Clause Dispatch</h3>
-					<p class="text-sm leading-relaxed text-on-surface-variant">
-						Matches by pattern specificity (<code class="text-primary font-semibold">5</code> beats <code class="text-primary font-semibold">_int</code> beats <code class="text-primary font-semibold">_</code>), deterministic and order-independent.
-					</p>
-				</div>
-
-				<div class="bg-surface-container border border-surface-variant hover:border-outline hover:bg-surface-container-high p-8 rounded-2xl shadow-sm hover:shadow-md transition-all">
-					<div class="text-3xl mb-4">⛓️</div>
-					<h3 class="font-display font-bold text-lg mb-2 text-on-surface">Pipes & Symbolic Rewriting</h3>
-					<p class="text-sm leading-relaxed text-on-surface-variant">
-						Thread values through <code class="text-primary font-semibold">|&gt;</code> with <code class="text-primary font-semibold">$</code> placeholders. Rewrite data using <code class="text-primary font-semibold">/.</code> rules.
-					</p>
-				</div>
-
-				<div class="bg-surface-container border border-surface-variant hover:border-outline hover:bg-surface-container-high p-8 rounded-2xl shadow-sm hover:shadow-md transition-all">
-					<div class="text-3xl mb-4">🛡️</div>
-					<h3 class="font-display font-bold text-lg mb-2 text-on-surface">Errors are Values</h3>
-					<p class="text-sm leading-relaxed text-on-surface-variant">
-						Failable operations return <code class="text-primary font-semibold">Err</code> values composed through pipelines with <code class="text-primary font-semibold">catch</code> and <code class="text-primary font-semibold">recover</code>.
-					</p>
-				</div>
+				{FEATURE_CARDS.map((card) => (
+					<div class="bg-surface-container border border-surface-variant hover:border-outline hover:bg-surface-container-high p-8 rounded-2xl shadow-sm hover:shadow-md transition-all">
+						<div class="text-3xl mb-4">{card.icon}</div>
+						<h3 class="font-display font-bold text-lg mb-2 text-on-surface">{card.title}</h3>
+						<p class="text-sm leading-relaxed text-on-surface-variant">{card.description}</p>
+					</div>
+				))}
 			</div>
 		</div>
 	</section>
 
-	<!-- Syntax Comparison / Tour Section -->
+	<!-- Syntax Comparison / Tour Section (Mapped Array Best Practice) -->
 	<section class="py-20 px-6 bg-surface-container-low border-y border-outline-variant">
 		<div class="max-w-7xl mx-auto">
 			<div class="text-center max-w-2xl mx-auto mb-14">
@@ -138,33 +115,12 @@ double(21)
 			</div>
 
 			<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-				<div class="bg-white border border-outline rounded-2xl overflow-hidden shadow-sm">
-					<div class="bg-surface-container px-4 py-3 font-bold text-sm text-primary border-b border-outline-variant">Pattern Matching & Specificity</div>
-					<pre class="p-4 bg-white font-mono text-xs leading-relaxed overflow-x-auto text-on-surface"><code>(* Specificity dispatch: specific beats general *)
-factorial(0) := 1
-factorial(n: _int) := n * factorial(n - 1)
-
-factorial(5)  (* Evaluates to 120 *)</code></pre>
-				</div>
-
-				<div class="bg-white border border-outline rounded-2xl overflow-hidden shadow-sm">
-					<div class="bg-surface-container px-4 py-3 font-bold text-sm text-primary border-b border-outline-variant">Pipes with $ Placeholders</div>
-					<pre class="p-4 bg-white font-mono text-xs leading-relaxed overflow-x-auto text-on-surface"><code>(* Subject lands in first position by default *)
-[1, 2, 3] |&gt; fold(plus, 0)      (* 6 *)
-
-(* $ marks exact subject slot *)
-2 |&gt; minus(10, $)               (* 8 *)</code></pre>
-				</div>
-
-				<div class="bg-white border border-outline rounded-2xl overflow-hidden shadow-sm">
-					<div class="bg-surface-container px-4 py-3 font-bold text-sm text-primary border-b border-outline-variant">Python Extension API</div>
-					<pre class="p-4 bg-white font-mono text-xs leading-relaxed overflow-x-auto text-on-surface"><code># Easily register Python functions as Minimatic heads
-from minimatic import register_head
-
-@register_head
-def custom_transform(env, args):
-    return sum(args) * 2</code></pre>
-				</div>
+				{SYNTAX_CARDS.map((card) => (
+					<div class="bg-white border border-outline rounded-2xl overflow-hidden shadow-sm">
+						<div class="bg-surface-container px-4 py-3 font-bold text-sm text-primary border-b border-outline-variant">{card.title}</div>
+						<pre class="p-4 bg-white font-mono text-xs leading-relaxed overflow-x-auto text-on-surface"><code>{card.code}</code></pre>
+					</div>
+				))}
 			</div>
 		</div>
 	</section>

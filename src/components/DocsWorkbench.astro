@@ -1,6 +1,6 @@
 ---
 import { Icon } from 'astro-icon/components';
-import { parseContentFiles } from '../core/content';
+import { parseContentFiles } from '../utils';
 
 interface Props {
 	initialSlug?: string;
@@ -198,17 +198,13 @@ const totalDocsCount = docList.length;
 <script>
 import { marked } from 'marked';
 import { createEditor, type EditorInstance } from '../core/editor';
-import { parseContentFiles } from '../core/content';
-import { renderMMT } from '../utils/mmt-engine.js';
-import { renderMinimatic } from '../utils/minimatic-engine.js';
-import { runPythonCode } from '../utils/python-engine.js';
+import { parseContentFiles, renderMMT, renderMinimatic, runPythonCode } from '../utils';
 
 // Read src/content/**/*.md directly in client script
 const contentFiles = import.meta.glob('../content/**/*.md', { query: '?raw', eager: true, import: 'default' });
 
 const { docList: DOC_PRESETS } = parseContentFiles(contentFiles);
 
-// Determine initial active slug from window.__INITIAL_DOC__ or URL or props
 let activeSlug = '';
 const initialProps = (window as any).__INITIAL_DOC__ || {};
 
@@ -393,7 +389,6 @@ function evaluateCodeOutputs(markdownText: string) {
 	}
 }
 
-// Handle popstate for browser Back/Forward navigation
 window.addEventListener('popstate', () => {
 	const currentPath = window.location.pathname.replace(/\/$/, '');
 	if (currentPath.startsWith('/docs/') && currentPath.length > 6) {
@@ -402,7 +397,6 @@ window.addEventListener('popstate', () => {
 	}
 });
 
-// Sidebar link click handling
 document.querySelectorAll('.doc-link-btn').forEach(btn => {
 	btn.addEventListener('click', (e) => {
 		e.preventDefault();
@@ -412,7 +406,6 @@ document.querySelectorAll('.doc-link-btn').forEach(btn => {
 	});
 });
 
-// Search Filter
 searchInput?.addEventListener('input', (e) => {
 	const query = (e.target as HTMLInputElement).value.toLowerCase();
 	let visibleCount = 0;
@@ -432,7 +425,6 @@ searchInput?.addEventListener('input', (e) => {
 	if (badge) badge.innerText = String(visibleCount);
 });
 
-// Keyboard '/' shortcut
 window.addEventListener('keydown', (e) => {
 	if (e.key === '/' && document.activeElement !== searchInput) {
 		e.preventDefault();
@@ -463,7 +455,6 @@ document.getElementById('btn-copy')?.addEventListener('click', () => {
 	}
 });
 
-// Initial load
 if (activeSlug) loadDocumentBySlug(activeSlug, false);
 </script>
 

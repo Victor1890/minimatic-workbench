@@ -1,4 +1,4 @@
-import { PRESETS } from '../data/presets.js';
+import { PRESETS } from '../data/presets';
 
 export interface FileItem {
   id: string;
@@ -17,67 +17,70 @@ export interface TreeNode {
   children?: TreeNode[];
 }
 
-export function formatName(name: string): string {
-  return name
-    .replace(/\.md$/, '')
-    .split(/[-_]/)
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
+export interface FeatureCard {
+  icon: string;
+  title: string;
+  description: string;
 }
 
-export function parseContentFiles(contentFilesRecord: Record<string, unknown>): {
-  docList: FileItem[];
-  treeRoot: TreeNode[];
-} {
-  const docList: FileItem[] = [];
-  const treeRoot: TreeNode[] = [];
+export interface SyntaxCard {
+  title: string;
+  code: string;
+}
 
-  function getOrCreateFolder(parentChildren: TreeNode[], folderName: string): TreeNode {
-    let folder = parentChildren.find(c => c.type === 'folder' && c.name === folderName);
-    if (!folder) {
-      folder = {
-        name: folderName,
-        displayName: formatName(folderName),
-        type: 'folder',
-        children: []
-      };
-      parentChildren.push(folder);
-    }
-    return folder;
+export interface PresetOption {
+  value: string;
+  label: string;
+}
+
+export const FEATURE_CARDS: FeatureCard[] = [
+  {
+    icon: '🧩',
+    title: 'Everything is head(args)',
+    description: 'No statements or special forms. Arithmetic, conditionals, and control flow are function applications in disguise.'
+  },
+  {
+    icon: '🎯',
+    title: 'Specificity Clause Dispatch',
+    description: 'Matches by pattern specificity (5 beats _int beats _), deterministic and order-independent.'
+  },
+  {
+    icon: '⛓️',
+    title: 'Pipes & Symbolic Rewriting',
+    description: 'Thread values through |> with $ placeholders. Rewrite data using /. rules.'
+  },
+  {
+    icon: '🛡️',
+    title: 'Errors are Values',
+    description: 'Failable operations return Err values composed through pipelines with catch and recover.'
   }
+];
 
-  Object.entries(contentFilesRecord).forEach(([filePath, content]) => {
-    const relative = filePath.replace(/^.*\/content\//, '');
-    const parts = relative.split('/');
-    const fileName = parts.pop() || '';
-    const docId = relative.replace(/\.md$/, '').replace(/[\/\s]+/g, '-');
-    const slug = relative.replace(/\.md$/, '').toLowerCase().replace(/[\/\s]+/g, '/');
-    const title = formatName(fileName);
+export const SYNTAX_CARDS: SyntaxCard[] = [
+  {
+    title: 'Pattern Matching & Specificity',
+    code: `(* Specificity dispatch: specific beats general *)\nfactorial(0) := 1\nfactorial(n: _int) := n * factorial(n - 1)\n\nfactorial(5)  (* Evaluates to 120 *)`
+  },
+  {
+    title: 'Pipes with $ Placeholders',
+    code: `(* Subject lands in first position by default *)\n[1, 2, 3] |> fold(plus, 0)      (* 6 *)\n\n(* $ marks exact subject slot *)\n2 |> minus(10, $)               (* 8 *)`
+  },
+  {
+    title: 'Python Extension API',
+    code: `# Easily register Python functions as Minimatic heads\nfrom minimatic import register_head\n\n@register_head\ndef custom_transform(env, args):\n    return sum(args) * 2`
+  }
+];
 
-    docList.push({
-      id: docId,
-      slug,
-      title,
-      path: relative,
-      content: content as string
-    });
-
-    let currentLevel = treeRoot;
-    parts.forEach(folderName => {
-      const folder = getOrCreateFolder(currentLevel, folderName);
-      currentLevel = folder.children!;
-    });
-
-    currentLevel.push({
-      name: fileName,
-      displayName: title,
-      type: 'file',
-      id: docId,
-      slug
-    });
-  });
-
-  return { docList, treeRoot };
-}
+export const PRESET_OPTIONS: PresetOption[] = [
+  { value: 'tour_full', label: 'Full Tour: All Examples' },
+  { value: 'tour_specificity', label: '1. Specificity Beats Order' },
+  { value: 'tour_recursion', label: '2. Recursion Base Cases' },
+  { value: 'tour_fizzbuzz', label: '3. Multi-Argument Specificity (FizzBuzz)' },
+  { value: 'tour_sequence', label: '4. Sequence Blanks & Listables' },
+  { value: 'tour_rewrites', label: '5. Data Rewriting (/.)' },
+  { value: 'tour_lambdas', label: '6. Lambdas & Currying' },
+  { value: 'tour_pipelines', label: '7. Pipes, Map & Fold' },
+  { value: 'tour_control', label: '8. Control Flow (if & switch)' }
+];
 
 export { PRESETS };

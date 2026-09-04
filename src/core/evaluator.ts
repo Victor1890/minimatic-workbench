@@ -1,6 +1,4 @@
-import { renderMMT } from '../utils/mmt-engine.js';
-import { renderMinimatic } from '../utils/minimatic-engine.js';
-import { runPythonCode } from '../utils/python-engine.js';
+import { renderMMT, renderMinimatic, runPythonCode } from '../utils';
 
 export interface LogEntry {
   type: 'comment' | 'clause' | 'stdout' | 'error' | 'info' | 'success';

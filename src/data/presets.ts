@@ -1,4 +1,4 @@
-export const PRESETS = {
+export const PRESETS: Record<string, string> = {
 	tour_full: `(* Official Minimatic Kernel Tour *)
 
 (* 1. Specificity beats declaration order *)

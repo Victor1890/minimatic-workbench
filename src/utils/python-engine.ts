@@ -3,12 +3,18 @@
  * Dynamically loads Pyodide CDN script on demand and executes Python code in-browser.
  */
 
-let pyodidePromise = null;
+declare global {
+  interface Window {
+    loadPyodide?: () => Promise<any>;
+  }
+}
 
-function loadPyodideScript() {
+let pyodidePromise: Promise<any> | null = null;
+
+function loadPyodideScript(): Promise<any> {
   if (pyodidePromise) return pyodidePromise;
   pyodidePromise = new Promise((resolve, reject) => {
-    if (window.loadPyodide) {
+    if (typeof window !== 'undefined' && window.loadPyodide) {
       resolve(window.loadPyodide());
       return;
     }
@@ -16,8 +22,12 @@ function loadPyodideScript() {
     script.src = 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js';
     script.onload = async () => {
       try {
-        const py = await window.loadPyodide();
-        resolve(py);
+        if (window.loadPyodide) {
+          const py = await window.loadPyodide();
+          resolve(py);
+        } else {
+          reject(new Error('window.loadPyodide undefined'));
+        }
       } catch (err) {
         reject(err);
       }
@@ -28,7 +38,7 @@ function loadPyodideScript() {
   return pyodidePromise;
 }
 
-export async function runPythonCode(code, outputElementId) {
+export async function runPythonCode(code: string, outputElementId: string): Promise<void> {
   const container = document.getElementById(outputElementId);
   if (!container) return;
 
@@ -36,9 +46,9 @@ export async function runPythonCode(code, outputElementId) {
 
   try {
     const pyodide = await loadPyodideScript();
-    let logs = [];
-    pyodide.setStdout({ batched: (str) => logs.push(str) });
-    pyodide.setStderr({ batched: (str) => logs.push('ERROR: ' + str) });
+    let logs: string[] = [];
+    pyodide.setStdout({ batched: (str: string) => logs.push(str) });
+    pyodide.setStderr({ batched: (str: string) => logs.push('ERROR: ' + str) });
 
     const result = await pyodide.runPythonAsync(code);
 
@@ -54,7 +64,7 @@ export async function runPythonCode(code, outputElementId) {
     }
 
     container.innerHTML = outputHtml;
-  } catch (err) {
-    container.innerHTML = `<div style="background: #ffcdd2; color: #b71c1c; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 13px; white-space: pre-wrap;">Traceback error:\n${err.message}</div>`;
+  } catch (err: any) {
+    container.innerHTML = `<div style="background: #ffcdd2; color: #b71c1c; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 13px; white-space: pre-wrap;">Traceback error:\n${err.message || err}</div>`;
   }
 }
