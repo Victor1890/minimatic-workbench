@@ -1,5 +1,6 @@
 ---
 import { Icon } from 'astro-icon/components';
+import { parseContentFiles } from '../core/content';
 
 interface Props {
 	initialSlug?: string;
@@ -13,79 +14,7 @@ const { initialSlug, initialContent, initialTitle, initialPath } = Astro.props;
 // Read src/content/**/*.md files dynamically from deep nested subfolders
 const contentFiles = import.meta.glob('../content/**/*.md', { query: '?raw', eager: true, import: 'default' });
 
-function formatName(name: string) {
-  return name
-    .replace(/\.md$/, '')
-    .split(/[-_]/)
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
-}
-
-interface FileItem {
-  id: string;
-  slug: string;
-  title: string;
-  path: string;
-  content: string;
-}
-
-interface TreeNode {
-  name: string;
-  displayName: string;
-  type: 'folder' | 'file';
-  id?: string;
-  slug?: string;
-  children?: TreeNode[];
-}
-
-const docList: FileItem[] = [];
-const treeRoot: TreeNode[] = [];
-
-function getOrCreateFolder(parentChildren: TreeNode[], folderName: string): TreeNode {
-  let folder = parentChildren.find(c => c.type === 'folder' && c.name === folderName);
-  if (!folder) {
-    folder = {
-      name: folderName,
-      displayName: formatName(folderName),
-      type: 'folder',
-      children: []
-    };
-    parentChildren.push(folder);
-  }
-  return folder;
-}
-
-Object.entries(contentFiles).forEach(([filePath, content]) => {
-  const relative = filePath.replace(/^.*\/content\//, '');
-  const parts = relative.split('/');
-  const fileName = parts.pop() || '';
-  const docId = relative.replace(/\.md$/, '').replace(/[\/\s]+/g, '-');
-  const slug = relative.replace(/\.md$/, '').toLowerCase().replace(/[\/\s]+/g, '/');
-  const title = formatName(fileName);
-
-  docList.push({
-    id: docId,
-    slug,
-    title,
-    path: relative,
-    content: content as string
-  });
-
-  let currentLevel = treeRoot;
-  parts.forEach(folderName => {
-    const folder = getOrCreateFolder(currentLevel, folderName);
-    currentLevel = folder.children!;
-  });
-
-  currentLevel.push({
-    name: fileName,
-    displayName: title,
-    type: 'file',
-    id: docId,
-    slug
-  });
-});
-
+const { docList, treeRoot } = parseContentFiles(contentFiles);
 const totalDocsCount = docList.length;
 ---
 
@@ -115,6 +44,10 @@ const totalDocsCount = docList.length;
 
 		<!-- Nav Links -->
 		<nav class="flex items-center gap-2.5">
+			<a href="/workbench" class="font-semibold text-xs text-primary hover:text-primary-hover transition-colors flex items-center gap-1.5 bg-primary-container px-3 py-1.5 rounded-full">
+				<span>⚡</span>
+				<span>Workbench</span>
+			</a>
 			<button class="nav-link-btn active bg-primary text-on-primary font-medium text-xs px-4 py-2 rounded-full cursor-pointer hover:bg-primary-hover shadow-xs transition-all" data-filter="all">All</button>
 			<a href="https://github.com/gabrielebaez/minimatic-kernel" target="_blank" rel="noopener" class="text-on-surface-variant hover:text-primary p-2 rounded-full transition-colors flex items-center" title="GitHub Repository">
 				<Icon name="github" class="w-5 h-5" />
@@ -210,7 +143,7 @@ const totalDocsCount = docList.length;
 			<div class="pt-3 border-t border-outline-variant">
 				<div class="flex items-center gap-2 text-xs text-on-surface-variant">
 					<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-					<span>Google Material 3 Specs</span>
+					<span>Deep Module Core Architecture</span>
 				</div>
 			</div>
 		</aside>
@@ -263,10 +196,9 @@ const totalDocsCount = docList.length;
 </script>
 
 <script>
-import { EditorView, basicSetup } from 'codemirror';
-import { EditorState } from '@codemirror/state';
-import { markdown } from '@codemirror/lang-markdown';
 import { marked } from 'marked';
+import { createEditor, type EditorInstance } from '../core/editor';
+import { parseContentFiles } from '../core/content';
 import { renderMMT } from '../utils/mmt-engine.js';
 import { renderMinimatic } from '../utils/minimatic-engine.js';
 import { runPythonCode } from '../utils/python-engine.js';
@@ -274,30 +206,7 @@ import { runPythonCode } from '../utils/python-engine.js';
 // Read src/content/**/*.md directly in client script
 const contentFiles = import.meta.glob('../content/**/*.md', { query: '?raw', eager: true, import: 'default' });
 
-function formatName(name: string) {
-  return name
-    .replace(/\.md$/, '')
-    .split(/[-_]/)
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
-}
-
-const DOC_PRESETS = Object.entries(contentFiles).map(([filePath, content]) => {
-  const relative = filePath.replace(/^.*\/content\//, '');
-  const parts = relative.split('/');
-  const fileName = parts.pop() || '';
-  const id = relative.replace(/\.md$/, '').replace(/[\/\s]+/g, '-');
-  const slug = relative.replace(/\.md$/, '').toLowerCase().replace(/[\/\s]+/g, '/');
-  const title = formatName(fileName);
-
-  return {
-    id,
-    slug,
-    title,
-    path: relative,
-    content: content as string
-  };
-});
+const { docList: DOC_PRESETS } = parseContentFiles(contentFiles);
 
 // Determine initial active slug from window.__INITIAL_DOC__ or URL or props
 let activeSlug = '';
@@ -314,7 +223,7 @@ if (initialProps.slug) {
 	}
 }
 
-let docContentMap = {};
+let docContentMap: Record<string, string> = {};
 
 DOC_PRESETS.forEach(doc => {
 	const saved = localStorage.getItem('doc_content_' + doc.id);
@@ -330,47 +239,24 @@ const searchInput = document.getElementById('doc-search-input') as HTMLInputElem
 const btnViewEditor = document.getElementById('view-mode-editor');
 const btnViewRendered = document.getElementById('view-mode-rendered');
 
-let currentViewMode = 'editor';
-let cmEditor: EditorView | null = null;
+let editor: EditorInstance | null = null;
 let currentDocId = '';
 
-function initCodeMirror(initialDoc: string) {
+function initDocsEditor(initialDocText: string) {
 	if (!cmWrapperPane) return;
-	if (cmEditor) cmEditor.destroy();
+	if (editor) editor.destroy();
 
-	const updateListener = EditorView.updateListener.of((update) => {
-		if (update.docChanged && currentDocId) {
-			const currentText = update.state.doc.toString();
-			docContentMap[currentDocId] = currentText;
-			localStorage.setItem('doc_content_' + currentDocId, currentText);
-			updateRenderedDocView(currentText);
-			evaluateCodeOutputs(currentText);
+	editor = createEditor({
+		container: cmWrapperPane,
+		initialValue: initialDocText,
+		onChange(currentText) {
+			if (currentDocId) {
+				docContentMap[currentDocId] = currentText;
+				localStorage.setItem('doc_content_' + currentDocId, currentText);
+				updateRenderedDocView(currentText);
+				evaluateCodeOutputs(currentText);
+			}
 		}
-	});
-
-	const customTheme = EditorView.theme({
-		"&": { height: "100%", fontSize: "13px" },
-		".cm-scroller": { overflow: "auto", fontFamily: "'Roboto Mono', 'Fira Code', monospace" },
-		".cm-content": { padding: "16px 20px" },
-		".cm-gutters": { backgroundColor: "#f7f9ff", borderRight: "1px solid #bdc1c6", color: "#5f6368" },
-		".cm-activeLine": { backgroundColor: "rgba(27, 110, 243, 0.05)" },
-		".cm-activeLineGutter": { backgroundColor: "#e8f0fe", color: "#1b6ef3" }
-	});
-
-	const state = EditorState.create({
-		doc: initialDoc,
-		extensions: [
-			basicSetup,
-			markdown(),
-			updateListener,
-			customTheme,
-			EditorView.lineWrapping
-		]
-	});
-
-	cmEditor = new EditorView({
-		state,
-		parent: cmWrapperPane
 	});
 }
 
@@ -381,7 +267,6 @@ function updateRenderedDocView(markdownText: string) {
 }
 
 function setViewMode(mode: string) {
-	currentViewMode = mode;
 	if (mode === 'editor') {
 		cmWrapperPane?.classList.remove('hidden');
 		renderedDocPane?.classList.add('hidden');
@@ -420,7 +305,7 @@ function loadDocumentBySlug(slug: string, pushState = false) {
 	}
 	
 	const content = docContentMap[doc.id] || doc.content;
-	initCodeMirror(content);
+	initDocsEditor(content);
 	updateRenderedDocView(content);
 
 	document.querySelectorAll('.doc-link-btn').forEach(el => {
@@ -440,7 +325,6 @@ function evaluateCodeOutputs(markdownText: string) {
 	inspectorPane.innerHTML = '';
 	let foundCodeBlocks = 0;
 
-	// Regex search for ```lang ... ``` blocks
 	const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
 	let match;
 
@@ -510,7 +394,7 @@ function evaluateCodeOutputs(markdownText: string) {
 }
 
 // Handle popstate for browser Back/Forward navigation
-window.addEventListener('popstate', (e) => {
+window.addEventListener('popstate', () => {
 	const currentPath = window.location.pathname.replace(/\/$/, '');
 	if (currentPath.startsWith('/docs/') && currentPath.length > 6) {
 		const slug = currentPath.replace('/docs/', '');
@@ -558,20 +442,18 @@ window.addEventListener('keydown', (e) => {
 
 document.getElementById('btn-reset')?.addEventListener('click', () => {
 	const doc = DOC_PRESETS.find(d => d.slug === activeSlug || d.id === currentDocId);
-	if (doc && cmEditor) {
+	if (doc && editor) {
 		docContentMap[doc.id] = doc.content;
 		localStorage.removeItem('doc_content_' + doc.id);
-		cmEditor.dispatch({
-			changes: { from: 0, to: cmEditor.state.doc.length, insert: doc.content }
-		});
+		editor.setValue(doc.content);
 		updateRenderedDocView(doc.content);
 		evaluateCodeOutputs(doc.content);
 	}
 });
 
 document.getElementById('btn-copy')?.addEventListener('click', () => {
-	if (cmEditor) {
-		const text = cmEditor.state.doc.toString();
+	if (editor) {
+		const text = editor.getValue();
 		navigator.clipboard.writeText(text);
 		const btn = document.getElementById('btn-copy');
 		if (btn) {

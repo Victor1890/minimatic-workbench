@@ -9,18 +9,24 @@ import { Icon } from 'astro-icon/components';
 		<div class="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
 			<a href="/" class="flex items-center gap-2.5 no-underline">
 				<svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-					<path d="M12 2L2 22H6L12 10L18 22H22L12 2Z" fill="#17805e"/>
-					<circle cx="12" cy="15" r="2.5" fill="#a8d5c4"/>
+					<path d="M12 2L2 22H6L12 10L18 22H22L12 2Z" fill="#1b6ef3"/>
+					<circle cx="12" cy="15" r="2.5" fill="#a8c7fa"/>
 				</svg>
 				<span class="font-display font-bold text-xl text-on-surface">Minimatic</span>
 			</a>
 
 			<nav class="flex items-center gap-5">
+				<a href="/workbench" class="font-semibold text-sm text-primary hover:text-primary-hover transition-colors flex items-center gap-1.5 bg-primary-container px-3 py-1 rounded-full">
+					<span>⚡</span>
+					<span>Workbench</span>
+				</a>
 				<a href="/docs" class="font-semibold text-sm text-on-surface-variant hover:text-primary transition-colors">Documentation</a>
+				<a href="/docs" class="font-semibold text-sm text-on-surface-variant hover:text-primary transition-colors">Kernel Spec</a>
+				<a href="/docs" class="font-semibold text-sm text-on-surface-variant hover:text-primary transition-colors">Proposals</a>
 				<a href="https://github.com/gabrielebaez/minimatic-kernel" target="_blank" rel="noopener" class="text-on-surface-variant hover:text-primary transition-colors flex items-center" title="GitHub Repository">
 					<Icon name="github" class="w-5 h-5" />
 				</a>
-				<a href="/docs" class="bg-primary hover:bg-primary-hover text-on-primary font-semibold text-xs px-4 py-2 rounded-full shadow-sm transition-colors">Launch Workbench</a>
+				<a href="/workbench" class="bg-primary hover:bg-primary-hover text-on-primary font-semibold text-xs px-4 py-2 rounded-full shadow-sm transition-colors">Launch Workbench</a>
 			</nav>
 		</div>
 	</header>
@@ -41,7 +47,7 @@ import { Icon } from 'astro-icon/components';
 				</p>
 				
 				<div class="flex flex-wrap gap-4">
-					<a href="/docs" class="bg-primary hover:bg-primary-hover text-on-primary px-7 py-3.5 rounded-full font-semibold text-sm shadow-md hover:-translate-y-0.5 transition-all">Try in Interactive Workbench</a>
+					<a href="/workbench" class="bg-primary hover:bg-primary-hover text-on-primary px-7 py-3.5 rounded-full font-semibold text-sm shadow-md hover:-translate-y-0.5 transition-all">Try in Interactive Workbench</a>
 					<a href="/docs" class="bg-transparent hover:bg-surface-container-high text-on-surface border border-outline px-7 py-3.5 rounded-full font-semibold text-sm transition-all">Learn Minimatic in 15 Min</a>
 				</div>
 			</div>
@@ -171,7 +177,7 @@ def custom_transform(env, args):
 				<p class="text-base opacity-90">Try the interactive memory workbench or read the complete language specification.</p>
 			</div>
 			<div>
-				<a href="/docs" class="bg-primary hover:bg-primary-hover text-on-primary px-7 py-3.5 rounded-full font-semibold text-sm shadow-md transition-colors inline-block">Open Interactive Docs</a>
+				<a href="/workbench" class="bg-primary hover:bg-primary-hover text-on-primary px-7 py-3.5 rounded-full font-semibold text-sm shadow-md transition-colors inline-block">Open Interactive Workbench</a>
 			</div>
 		</div>
 	</section>
@@ -184,10 +190,11 @@ def custom_transform(env, args):
 				<span class="text-xs text-on-surface-variant">© 2026 Zenwood Studio</span>
 			</div>
 			<div class="flex items-center gap-5 text-xs font-semibold">
+				<a href="/workbench" class="text-primary hover:text-primary-hover transition-colors font-bold">Workbench</a>
 				<a href="/docs" class="text-on-surface-variant hover:text-primary transition-colors">Documentation</a>
 				<a href="/docs" class="text-on-surface-variant hover:text-primary transition-colors">Kernel Spec</a>
 				<a href="/docs" class="text-on-surface-variant hover:text-primary transition-colors">Proposals</a>
-				<a href="https://github.com/gabrielebaez/minimatic-kernel" target="_blank" rel="noopener" class="text-on-surface-variant hover:text-primary transition-colors flex items-center" title="GitHub Repository">
+				<a href="https://github.com/gabrielebaez/minimatic-kernel" target="_blank" rel="noopener" class="text-on-surface-variant hover:text-primary transition-colors flex items-center font-normal">
 					<Icon name="github" class="w-4 h-4" />
 				</a>
 			</div>
